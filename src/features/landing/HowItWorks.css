@@ -1,0 +1,60 @@
+.hiw-steps {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-6);
+  margin-top: var(--space-12);
+}
+
+.hiw-step {
+  text-align: center;
+  position: relative;
+  padding: var(--space-6);
+}
+
+.hiw-num {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 800;
+  margin-bottom: var(--space-3);
+  opacity: 0.5;
+}
+
+.hiw-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto var(--space-4);
+}
+
+.hiw-step h3 {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  margin-bottom: var(--space-2);
+}
+
+.hiw-step p {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.hiw-connector {
+  position: absolute;
+  top: 50%;
+  right: -20px;
+  width: 40px;
+  height: 2px;
+  background: var(--border-default);
+}
+
+@media (max-width: 768px) {
+  .hiw-steps { grid-template-columns: 1fr 1fr; }
+  .hiw-connector { display: none; }
+}
+
+@media (max-width: 480px) {
+  .hiw-steps { grid-template-columns: 1fr; }
+}

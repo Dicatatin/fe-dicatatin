@@ -1,0 +1,36 @@
+.trust-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-6);
+  margin-top: var(--space-10);
+}
+
+.trust-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8);
+  text-align: center;
+  transition: all var(--transition-base);
+}
+
+.trust-card:hover {
+  border-color: var(--border-default);
+  transform: translateY(-3px);
+}
+
+.trust-card h4 {
+  font-size: var(--text-base);
+  font-weight: 700;
+  margin: var(--space-4) 0 var(--space-2);
+}
+
+.trust-card p {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .trust-grid { grid-template-columns: 1fr; }
+}
