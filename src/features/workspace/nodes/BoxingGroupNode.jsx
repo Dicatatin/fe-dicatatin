@@ -1,5 +1,5 @@
 import { Handle, Position } from '@xyflow/react';
-import './nodes.css';
+
 
 const COLORS = ['teal', 'blue', 'purple', 'amber', 'pink'];
 

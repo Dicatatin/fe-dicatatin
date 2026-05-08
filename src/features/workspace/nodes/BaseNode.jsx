@@ -2,7 +2,6 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { Handle, Position, NodeResizer } from '@xyflow/react';
 import useUIStore from '@/stores/useUIStore';
 import useWorkspaceStore from '@/stores/useWorkspaceStore';
-import './nodes.css';
 
 /**
  * BaseNode — shared base component for all custom node types.

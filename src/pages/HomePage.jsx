@@ -5,16 +5,13 @@ import Navbar from '@/components/layout/Navbar';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
-import Modal from '@/components/ui/Modal';
 import { PipelineLoader } from '@/components/ui/Loader';
 import useWorkspaceStore from '@/stores/useWorkspaceStore';
 import { METHOD_INFO } from '@/utils/constants';
-import './HomePage.css';
 
 export default function HomePage() {
   const navigate = useNavigate();
   const { workspaces, workspacesLoading, fetchWorkspaces } = useWorkspaceStore();
-  const [showNewModal, setShowNewModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMethod, setSelectedMethod] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(null);
@@ -39,7 +36,6 @@ export default function HomePage() {
     setTimeout(() => setPipelineStage('visualizing'), 4000);
     setTimeout(() => {
       setIsProcessing(false);
-      setShowNewModal(false);
       navigate('/workspace/new');
     }, 6000);
   };
@@ -51,34 +47,41 @@ export default function HomePage() {
   };
 
   return (
-    <div className="home-page">
+    <div className="min-h-screen bg-background">
       <Navbar />
-      <main className="home-main">
-        <div className="container">
+      <main className="py-8">
+        <div className="container mx-auto px-4">
           
-          {/* AI Prompt Section - Replaces Modal */}
-          <div className="ai-prompt-section glass-card">
-            <h2 className="ai-prompt-title">
-              <span className="gradient-text">Ubah Catatan Jadi Pengetahuan</span> ✨
+          {/* AI Prompt Section */}
+          <Card className="p-8 mb-6 text-center glass-card border-none">
+            <h2 className="text-3xl font-bold mb-2">
+              <span className="bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent">Ubah Catatan Jadi Pengetahuan</span> ✨
             </h2>
-            <p className="text-secondary mb-6">
+            <p className="text-muted-foreground mb-6">
               Upload foto catatan tanganmu dan biarkan AI menyusunnya menjadi struktur yang rapih.
             </p>
             
             {isProcessing ? (
-              <div className="ai-processing-state">
+              <div className="py-10">
                 <PipelineLoader stage={pipelineStage} />
               </div>
             ) : (
-              <div className="ai-prompt-container">
+              <div className="flex flex-col gap-6 text-left max-w-[800px] mx-auto">
                 {/* Upload area */}
-                <div className="upload-area inline-upload" onClick={() => document.getElementById('file-upload')?.click()}>
+                <div 
+                  className="bg-background border-2 border-dashed border-border rounded-xl p-8 text-center cursor-pointer hover:border-primary hover:bg-secondary/50 transition-all group" 
+                  onClick={() => document.getElementById('file-upload')?.click()}
+                >
                   {uploadedFile ? (
-                    <div className="upload-preview inline-preview">
-                      <img src={URL.createObjectURL(uploadedFile)} alt="Preview" />
-                      <p className="text-sm font-medium mt-2">{uploadedFile.name}</p>
+                    <div className="flex flex-col items-center">
+                      <img 
+                        src={URL.createObjectURL(uploadedFile)} 
+                        alt="Preview" 
+                        className="max-h-[150px] rounded-lg shadow-md mb-4"
+                      />
+                      <p className="text-sm font-medium">{uploadedFile.name}</p>
                       <button 
-                        className="btn btn-ghost btn-sm mt-2" 
+                        className="mt-2 text-xs text-primary font-semibold hover:underline" 
                         onClick={(e) => { e.stopPropagation(); setUploadedFile(null); }}
                       >
                         Ganti Foto
@@ -86,42 +89,45 @@ export default function HomePage() {
                     </div>
                   ) : (
                     <>
-                      <div className="upload-icon-wrapper">📷</div>
-                      <p className="font-semibold mt-3">Upload Foto Catatan</p>
-                      <p className="text-sm text-muted mt-1">JPG atau PNG — Drag & drop atau klik</p>
+                      <div className="text-5xl mb-3 group-hover:scale-110 transition-transform duration-300">📷</div>
+                      <p className="font-bold text-lg">Upload Foto Catatan</p>
+                      <p className="text-sm text-muted-foreground mt-1">JPG atau PNG — Drag & drop atau klik</p>
                     </>
                   )}
                   <input
                     id="file-upload"
                     type="file"
                     accept="image/jpeg,image/png"
-                    style={{ display: 'none' }}
+                    className="hidden"
                     onChange={(e) => setUploadedFile(e.target.files?.[0] || null)}
                   />
                 </div>
 
                 {/* Method selector inline */}
-                <div className="inline-method-selector">
-                  <h4 className="mb-3">Pilih Metode Belajar</h4>
-                  <div className="method-selector-grid inline-grid">
+                <div className="bg-background rounded-xl p-6 border border-border shadow-sm">
+                  <h4 className="font-bold mb-4 flex items-center gap-2">
+                    <Grid size={18} className="text-primary" />
+                    Pilih Metode Belajar
+                  </h4>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3">
                     {Object.entries(METHOD_INFO).map(([key, info]) => (
                       <div
                         key={key}
-                        className={`method-option ${selectedMethod === key ? 'active' : ''}`}
+                        className={`flex flex-col items-center gap-2 p-3 border rounded-xl cursor-pointer transition-all hover:bg-muted ${selectedMethod === key ? 'border-primary bg-primary/10 ring-1 ring-primary' : 'border-border'}`}
                         onClick={() => setSelectedMethod(key)}
-                        style={selectedMethod === key ? { borderColor: info.color, background: `${info.color}10` } : {}}
                       >
-                        <span className="method-option-icon">{info.icon}</span>
-                        <span className="method-option-label">{info.label}</span>
+                        <span className="text-2xl">{info.icon}</span>
+                        <span className="text-[10px] font-bold uppercase tracking-tight text-center leading-tight">{info.label}</span>
                       </div>
                     ))}
                   </div>
                   
-                  <div className="mt-6 flex justify-end">
+                  <div className="mt-8 flex justify-end">
                     <Button
                       disabled={!selectedMethod || !uploadedFile}
                       onClick={handleStartProcessing}
                       size="lg"
+                      className="px-8 shadow-lg shadow-primary/20"
                     >
                       Mulai Proses AI ✨
                     </Button>
@@ -129,62 +135,62 @@ export default function HomePage() {
                 </div>
               </div>
             )}
-          </div>
+          </Card>
 
-          <div className="divider mt-8 mb-8" />
+          <div className="border-t border-border my-12" />
 
           {/* Header */}
-          <div className="home-header">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
             <div>
-              <h1 className="home-title">Library Catatan</h1>
-              <p className="text-secondary">Kelola semua workspace catatan Anda</p>
+              <h1 className="text-3xl font-extrabold tracking-tight">Library Catatan</h1>
+              <p className="text-muted-foreground">Kelola semua workspace catatan Anda</p>
             </div>
             
             {/* Search */}
-            <div className="home-search">
-              <Search size={18} className="home-search-icon" />
+            <div className="relative w-full md:w-80">
+              <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <input
                 type="text"
                 placeholder="Cari catatan..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="home-search-input"
+                className="w-full pl-10 pr-4 py-2 bg-secondary border border-border rounded-lg text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-sm"
               />
             </div>
           </div>
 
           {/* Grid */}
           {workspacesLoading ? (
-            <div className="home-grid">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="skeleton" style={{ height: '220px', borderRadius: 'var(--radius-lg)' }} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {[1, 2, 3, 4].map((i) => (
+                <Card key={i} className="h-[220px] animate-pulse bg-muted/50 border-none" />
               ))}
             </div>
           ) : filteredWorkspaces.length === 0 ? (
-            <div className="home-empty">
-              <Grid size={48} className="text-muted" />
-              <h3>Belum ada catatan</h3>
-              <p className="text-secondary">Mulai buat workspace baru menggunakan AI di atas.</p>
+            <div className="text-center py-20 px-8 flex flex-col items-center gap-4">
+              <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-2">
+                <Grid size={32} className="text-muted-foreground/50" />
+              </div>
+              <h3 className="text-xl font-bold">Belum ada catatan</h3>
+              <p className="text-muted-foreground max-w-md">Mulai buat workspace baru menggunakan AI di atas untuk melihat catatan Anda di sini.</p>
             </div>
           ) : (
-            <div className="home-grid">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {filteredWorkspaces.map((ws, i) => (
                 <Card
                   key={ws.id}
-                  padding="none"
-                  className={`workspace-card animate-fade-in-up stagger-${i + 1}`}
+                  className="group overflow-hidden cursor-pointer border-border hover:border-primary hover:shadow-xl hover:shadow-primary/5 transition-all duration-300"
                   onClick={() => navigate(`/workspace/${ws.id}`)}
                 >
-                  <div className="ws-card-thumb">
-                    <div className="ws-card-thumb-placeholder">
-                      <span style={{ fontSize: '32px' }}>{METHOD_INFO[ws.method]?.icon || '📝'}</span>
-                    </div>
+                  <div className="h-[140px] bg-gradient-to-br from-secondary/50 to-muted/30 flex items-center justify-center relative overflow-hidden">
+                    <div className="text-5xl opacity-40 group-hover:scale-125 transition-transform duration-500">{METHOD_INFO[ws.method]?.icon || '📝'}</div>
+                    <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
-                  <div className="ws-card-info">
-                    <h3 className="ws-card-title">{ws.name}</h3>
-                    <div className="ws-card-meta">
+                  <div className="p-4 px-5">
+                    <h3 className="text-base font-bold mb-2 truncate group-hover:text-primary transition-colors">{ws.name}</h3>
+                    <div className="flex items-center justify-between">
                       <Badge method={ws.method} />
-                      <span className="text-xs text-muted">{formatDate(ws.updatedAt)}</span>
+                      <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">{formatDate(ws.updatedAt)}</span>
                     </div>
                   </div>
                 </Card>
@@ -196,3 +202,4 @@ export default function HomePage() {
     </div>
   );
 }
+

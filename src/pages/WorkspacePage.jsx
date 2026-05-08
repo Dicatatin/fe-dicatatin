@@ -25,8 +25,7 @@ import { getMockDataByMethod } from '@/utils/mockData';
 import { exportCanvasToPDF } from '@/utils/pdfExport';
 import useAutosave from '@/hooks/useAutosave';
 import useKeyboardShortcuts from '@/hooks/useKeyboardShortcuts';
-import '@/features/workspace/nodes/nodes.css';
-import './WorkspacePage.css';
+
 
 // Method mapping from workspace list mock
 const WORKSPACE_METHODS = {
@@ -188,27 +187,27 @@ function WorkspaceEditor() {
   ];
 
   return (
-    <div className="workspace-page">
+    <div className="h-screen flex flex-col bg-background overflow-hidden">
       {/* Top Bar */}
-      <div className="ws-topbar">
-        <div className="ws-topbar-left">
-          <button className="btn btn-ghost btn-icon" onClick={() => navigate('/home')}>
+      <div className="flex items-center justify-between h-14 px-4 bg-secondary border-b border-border z-20 shrink-0">
+        <div className="flex items-center gap-3 flex-1">
+          <Button variant="ghost" size="icon" onClick={() => navigate('/home')}>
             <ArrowLeft size={18} />
-          </button>
-          <div className="ws-topbar-name" onDoubleClick={handleNameDoubleClick}>
+          </Button>
+          <div className="flex items-center gap-3" onDoubleClick={handleNameDoubleClick}>
             {isEditingName ? (
               <input
                 ref={nameInputRef}
-                className="ws-name-input"
+                className="text-sm font-semibold px-2 py-1 bg-background border border-primary rounded-sm text-foreground min-w-[200px]"
                 value={workspaceName}
                 onChange={(e) => setWorkspaceName(e.target.value)}
                 onBlur={handleNameBlur}
                 onKeyDown={handleNameKeyDown}
               />
             ) : (
-              <span className="ws-name-display">{workspaceName}</span>
+              <span className="text-sm font-semibold cursor-pointer px-2 py-1 rounded-sm transition-colors hover:bg-muted">{workspaceName}</span>
             )}
-            <span className={`ws-save-status ws-save-${saveStatus}`}>
+            <span className={`text-xs font-medium ${saveStatus === 'saved' ? 'text-green-500' : saveStatus === 'saving' ? 'text-amber-500' : 'text-muted-foreground'}`}>
               {saveStatus === 'saved' && '✓ Saved'}
               {saveStatus === 'saving' && '⟳ Saving...'}
               {saveStatus === 'unsaved' && '● Unsaved'}
@@ -216,15 +215,15 @@ function WorkspaceEditor() {
           </div>
         </div>
 
-        <div className="ws-topbar-center">
-          <div className="ws-mode-toggle">
+        <div className="flex items-center justify-center">
+          <div className="flex items-center gap-2 px-3 py-1 bg-muted rounded-full text-xs text-muted-foreground">
             {isEditMode ? <Edit3 size={14} /> : <Eye size={14} />}
             <Toggle checked={isEditMode} onChange={setEditMode} size="sm" />
             <span className="text-xs">{isEditMode ? 'Edit' : 'View'}</span>
           </div>
         </div>
 
-        <div className="ws-topbar-right">
+        <div className="flex items-center gap-2 flex-1 justify-end">
           <Button variant="ghost" size="sm" onClick={handleSave} icon={<Save size={16} />}>
             Save
           </Button>
@@ -241,27 +240,26 @@ function WorkspaceEditor() {
             Belajar
           </Button>
           <button
-            className="ws-tool-btn"
+            className="flex items-center justify-center w-9 h-9 rounded-md text-muted-foreground transition-colors cursor-pointer hover:bg-muted hover:text-foreground ml-1"
             onClick={() => setRightSidebarOpen(!isRightSidebarOpen)}
             title="Toggle Properties"
-            style={{ marginLeft: 4 }}
           >
             {isRightSidebarOpen ? <PanelRightClose size={18} /> : <PanelRightOpen size={18} />}
           </button>
         </div>
       </div>
 
-      <div className="ws-body">
+      <div className="flex-1 flex relative overflow-hidden">
         {/* Left Toolbar */}
         {isEditMode && (
-          <div className="ws-toolbar animate-fade-in-left">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 z-30 bg-secondary border border-border rounded-lg p-2 flex flex-col gap-1 shadow-lg animate-in fade-in slide-in-from-left-4">
             {tools.map((t) =>
               t.key.startsWith('divider') ? (
-                <div key={t.key} className="ws-toolbar-divider" />
+                <div key={t.key} className="w-7 h-px bg-border my-1 mx-auto" />
               ) : (
                 <button
                   key={t.key}
-                  className={`ws-tool-btn ${activeTool === t.key ? 'active' : ''}`}
+                  className={`flex items-center justify-center w-9 h-9 rounded-md text-muted-foreground transition-colors cursor-pointer hover:bg-muted hover:text-foreground ${activeTool === t.key ? 'bg-primary/20 text-primary' : ''}`}
                   onClick={() => handleToolClick(t.key)}
                   title={t.label}
                 >
@@ -273,8 +271,8 @@ function WorkspaceEditor() {
         )}
 
         {/* Canvas */}
-        <div className="ws-canvas-area">
-          <div className="ws-a4-wrapper" ref={canvasRef} style={{ width: A4_WIDTH, height: A4_HEIGHT }}>
+        <div className="flex-1 flex items-center justify-center bg-background overflow-auto p-8">
+          <div className="bg-white shadow-[0_8px_32px_rgba(0,0,0,0.4)] rounded-sm relative shrink-0 [&_.react-flow]:rounded-sm [&_.react-flow__background]:bg-white [&_.react-flow__minimap]:border [&_.react-flow__minimap]:border-border [&_.react-flow__minimap]:rounded-md [&_.react-flow__minimap]:overflow-hidden [&_.react-flow__controls]:rounded-md [&_.react-flow__controls]:border [&_.react-flow__controls]:border-border [&_.react-flow__controls]:overflow-hidden [&_.react-flow__controls]:shadow-md [&_.react-flow__controls_button]:bg-secondary [&_.react-flow__controls_button]:border-border [&_.react-flow__controls_button]:text-muted-foreground hover:[&_.react-flow__controls_button]:bg-muted hover:[&_.react-flow__controls_button]:text-foreground" ref={canvasRef} style={{ width: A4_WIDTH, height: A4_HEIGHT }}>
             <ReactFlow
               nodes={nodes}
               edges={edges}

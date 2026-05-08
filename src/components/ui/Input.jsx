@@ -1,52 +1,32 @@
-import { AlertCircle } from 'lucide-react';
-import './Input.css';
+import * as React from "react"
+import { cn } from "@/lib/utils"
 
-export default function Input({
-  label,
-  type = 'text',
-  placeholder,
-  value,
-  onChange,
-  error,
-  iconLeft,
-  iconRight,
-  disabled = false,
-  required = false,
-  className = '',
-  id,
-  ...props
-}) {
-  const inputId = id || `input-${label?.toLowerCase().replace(/\s/g, '-')}`;
-
+const Input = React.forwardRef(({ className, type, icon, error, ...props }, ref) => {
   return (
-    <div className={`input-group ${error ? 'has-error' : ''} ${className}`}>
-      {label && (
-        <label htmlFor={inputId} className="input-label">
-          {label}
-          {required && <span style={{ color: 'var(--error)', marginLeft: '2px' }}>*</span>}
-        </label>
-      )}
-      <div className="input-wrapper">
-        {iconLeft && <span className="input-icon-left">{iconLeft}</span>}
+    <div className="w-full">
+      <div className="relative">
+        {icon && (
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+            {icon}
+          </div>
+        )}
         <input
-          id={inputId}
           type={type}
-          placeholder={placeholder}
-          value={value}
-          onChange={onChange}
-          disabled={disabled}
-          required={required}
-          className={`input-field ${iconRight ? 'has-icon-right' : ''}`}
+          className={cn(
+            "flex h-10 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-colors",
+            icon && "pl-10",
+            error && "border-destructive focus-visible:ring-destructive",
+            className
+          )}
+          ref={ref}
           {...props}
         />
-        {iconRight && <span className="input-icon-right">{iconRight}</span>}
       </div>
-      {error && (
-        <span className="input-error">
-          <AlertCircle size={12} />
-          {error}
-        </span>
-      )}
+      {error && <p className="mt-1 text-xs text-destructive">{error}</p>}
     </div>
-  );
-}
+  )
+})
+Input.displayName = "Input"
+
+export default Input;
+export { Input }

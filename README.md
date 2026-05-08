@@ -25,14 +25,15 @@ DICATAT.IN is an AI-powered note-taking platform designed to transform messy han
 
 ## 🛠️ Tech Stack
 
-*   **Framework**: React 18+ (Vite)
-*   **Routing**: React Router v6
+*   **Framework**: React 19 (Vite)
+*   **Routing**: React Router v7
 *   **State Management**: Zustand
 *   **Canvas Engine**: React Flow (`@xyflow/react`)
 *   **Auto Layout**: ELK (`elkjs`)
+*   **UI Components**: shadcn/ui (Radix UI)
+*   **Styling**: Tailwind CSS v4 with CSS variables
 *   **PDF Export**: `html2canvas` & `jsPDF`
 *   **Icons**: Lucide React
-*   **Styling**: Vanilla CSS with comprehensive Design System Variables
 
 ## 🚀 Getting Started
 
