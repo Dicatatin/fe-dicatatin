@@ -5,6 +5,16 @@ import {
   addEdge,
 } from '@xyflow/react';
 
+const cloneGraph = ({ nodes, edges }) => ({
+  nodes: JSON.parse(JSON.stringify(nodes)),
+  edges: JSON.parse(JSON.stringify(edges)),
+});
+
+const pushHistory = (state, snapshot = cloneGraph(state)) => ({
+  historyPast: [...state.historyPast, snapshot].slice(-50),
+  historyFuture: [],
+});
+
 const useWorkspaceStore = create((set, get) => ({
   // Workspace list (home page)
   workspaces: [],
@@ -18,6 +28,9 @@ const useWorkspaceStore = create((set, get) => ({
   // React Flow state
   nodes: [],
   edges: [],
+  historyPast: [],
+  historyFuture: [],
+  dragStartSnapshot: null,
 
   // Flashcards for current workspace
   flashcards: [],
@@ -104,61 +117,157 @@ const useWorkspaceStore = create((set, get) => ({
     nodes: workspace?.nodes || [],
     edges: workspace?.edges || [],
     flashcards: workspace?.flashcards || [],
+    historyPast: [],
+    historyFuture: [],
+    dragStartSnapshot: null,
   }),
 
   setWorkspaceName: (name) => set({ workspaceName: name }),
   setMethod: (method) => set({ method }),
 
   // --- React Flow node/edge actions ---
-  setNodes: (nodes) => set({ nodes }),
-  setEdges: (edges) => set({ edges }),
+  loadGraph: (nodes, edges) => set({
+    nodes,
+    edges,
+    historyPast: [],
+    historyFuture: [],
+    dragStartSnapshot: null,
+  }),
+
+  setNodes: (nodes, { record = true } = {}) => set((state) => ({
+    ...(record ? pushHistory(state) : {}),
+    nodes,
+  })),
+
+  setEdges: (edges, { record = true } = {}) => set((state) => ({
+    ...(record ? pushHistory(state) : {}),
+    edges,
+  })),
 
   onNodesChange: (changes) => {
-    set({ nodes: applyNodeChanges(changes, get().nodes) });
+    set((state) => {
+      const hasMovingNode = changes.some((change) => change.type === 'position' && change.dragging);
+      const hasFinishedMove = changes.some((change) => change.type === 'position' && change.dragging === false);
+      const shouldRecord = changes.some((change) => !['select', 'position'].includes(change.type));
+      const dragStartSnapshot = hasMovingNode && !state.dragStartSnapshot
+        ? cloneGraph(state)
+        : state.dragStartSnapshot;
+      const nodes = applyNodeChanges(changes, state.nodes);
+
+      if (hasFinishedMove && state.dragStartSnapshot) {
+        return {
+          ...pushHistory(state, state.dragStartSnapshot),
+          nodes,
+          dragStartSnapshot: null,
+        };
+      }
+
+      return {
+        ...(shouldRecord ? pushHistory(state) : {}),
+        nodes,
+        dragStartSnapshot,
+      };
+    });
   },
 
   onEdgesChange: (changes) => {
-    set({ edges: applyEdgeChanges(changes, get().edges) });
+    const shouldRecord = changes.some((change) => change.type !== 'select');
+    set((state) => ({
+      ...(shouldRecord ? pushHistory(state) : {}),
+      edges: applyEdgeChanges(changes, state.edges),
+    }));
   },
 
   onConnect: (connection) => {
-    set({ edges: addEdge(connection, get().edges) });
+    set((state) => ({
+      ...pushHistory(state),
+      edges: addEdge(connection, state.edges),
+    }));
   },
 
   addNode: (node) => {
-    set({ nodes: [...get().nodes, node] });
+    set((state) => ({
+      ...pushHistory(state),
+      nodes: [...state.nodes, node],
+    }));
   },
 
   updateNode: (id, data) => {
-    set({
-      nodes: get().nodes.map((n) =>
+    set((state) => ({
+      ...pushHistory(state),
+      nodes: state.nodes.map((n) =>
         n.id === id ? { ...n, data: { ...n.data, ...data } } : n
       ),
-    });
+    }));
+  },
+
+  updateNodeStyle: (id, style) => {
+    set((state) => ({
+      ...pushHistory(state),
+      nodes: state.nodes.map((n) =>
+        n.id === id ? { ...n, style: { ...n.style, ...style } } : n
+      ),
+    }));
   },
 
   onNodesDelete: (deletedNodes) => {
     const deletedIds = deletedNodes.map(n => n.id);
-    set({
-      nodes: get().nodes.filter((n) => !deletedIds.includes(n.id)),
-      edges: get().edges.filter((e) => !deletedIds.includes(e.source) && !deletedIds.includes(e.target)),
-    });
+    set((state) => ({
+      ...pushHistory(state),
+      nodes: state.nodes.filter((n) => !deletedIds.includes(n.id)),
+      edges: state.edges.filter((e) => !deletedIds.includes(e.source) && !deletedIds.includes(e.target)),
+    }));
   },
 
   onEdgesDelete: (deletedEdges) => {
     const deletedIds = deletedEdges.map(e => e.id);
-    set({ edges: get().edges.filter((e) => !deletedIds.includes(e.id)) });
+    set((state) => ({
+      ...pushHistory(state),
+      edges: state.edges.filter((e) => !deletedIds.includes(e.id)),
+    }));
   },
 
   deleteNode: (id) => {
-    set({
-      nodes: get().nodes.filter((n) => n.id !== id),
-      edges: get().edges.filter((e) => e.source !== id && e.target !== id),
-    });
+    set((state) => ({
+      ...pushHistory(state),
+      nodes: state.nodes.filter((n) => n.id !== id),
+      edges: state.edges.filter((e) => e.source !== id && e.target !== id),
+    }));
   },
 
   deleteEdge: (id) => {
-    set({ edges: get().edges.filter((e) => e.id !== id) });
+    set((state) => ({
+      ...pushHistory(state),
+      edges: state.edges.filter((e) => e.id !== id),
+    }));
+  },
+
+  undo: () => {
+    set((state) => {
+      if (state.historyPast.length === 0) return state;
+      const previous = state.historyPast[state.historyPast.length - 1];
+      return {
+        nodes: previous.nodes,
+        edges: previous.edges,
+        historyPast: state.historyPast.slice(0, -1),
+        historyFuture: [cloneGraph(state), ...state.historyFuture].slice(0, 50),
+        dragStartSnapshot: null,
+      };
+    });
+  },
+
+  redo: () => {
+    set((state) => {
+      if (state.historyFuture.length === 0) return state;
+      const next = state.historyFuture[0];
+      return {
+        nodes: next.nodes,
+        edges: next.edges,
+        historyPast: [...state.historyPast, cloneGraph(state)].slice(-50),
+        historyFuture: state.historyFuture.slice(1),
+        dragStartSnapshot: null,
+      };
+    });
   },
 
   // --- Flashcard actions ---
@@ -185,6 +294,9 @@ const useWorkspaceStore = create((set, get) => ({
     nodes: [],
     edges: [],
     flashcards: [],
+    historyPast: [],
+    historyFuture: [],
+    dragStartSnapshot: null,
   }),
 }));
 

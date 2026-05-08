@@ -6,11 +6,12 @@ import {
   Controls,
   MiniMap,
   ReactFlowProvider,
+  useReactFlow,
 } from '@xyflow/react';
 import {
   Save, Download, Eye, Edit3, BookOpen, ArrowLeft,
-  MousePointer2, Hand, Square, Circle, Type, Minus, Trash2, Diamond,
-  PanelRightOpen, PanelRightClose,
+  MousePointer2, Hand, Square, Circle, Type, Trash2, Diamond,
+  PanelRightOpen, PanelRightClose, Undo2, Redo2,
 } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Toggle from '@/components/ui/Toggle';
@@ -51,9 +52,11 @@ const WORKSPACE_NAMES = {
 function WorkspaceEditor() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { screenToFlowPosition } = useReactFlow();
   const {
     nodes, edges, onNodesChange, onEdgesChange, onConnect,
-    setNodes, setEdges, workspaceName, setWorkspaceName,
+    loadGraph, workspaceName, setWorkspaceName,
+    addNode, deleteNode, undo, redo, historyPast, historyFuture,
   } = useWorkspaceStore();
   const {
     isEditMode, setEditMode, activeTool, setActiveTool,
@@ -72,11 +75,10 @@ function WorkspaceEditor() {
     const method = WORKSPACE_METHODS[id] || METHODS.MIND_MAP;
     setCurrentMethod(method);
     const mockData = getMockDataByMethod(method);
-    setNodes(mockData.nodes);
-    setEdges(mockData.edges);
+    loadGraph(mockData.nodes, mockData.edges);
     setCards(mockData.flashcards);
     setWorkspaceName(WORKSPACE_NAMES[id] || 'Untitled Workspace');
-  }, [id, setNodes, setEdges, setCards, setWorkspaceName]);
+  }, [id, loadGraph, setCards, setWorkspaceName]);
 
   // Autosave hook
   useAutosave(2000);
@@ -126,50 +128,92 @@ function WorkspaceEditor() {
     setRightSidebarOpen(true);
   }, [setSelectedNode, setRightSidebarOpen]);
 
-  const handlePaneClick = useCallback(() => {
+  const createShapeNode = useCallback((toolKey, position) => {
+    const isText = toolKey === TOOLS.TEXT;
+    const size = {
+      width: isText ? 180 : 140,
+      height: isText ? 48 : toolKey === TOOLS.OVAL ? 100 : 96,
+    };
+    const clampedPosition = {
+      x: Math.max(8, Math.min(A4_WIDTH - size.width - 8, position.x - size.width / 2)),
+      y: Math.max(8, Math.min(A4_HEIGHT - size.height - 8, position.y - size.height / 2)),
+    };
+    const shapeLabel = {
+      [TOOLS.RECTANGLE]: 'Rectangle',
+      [TOOLS.OVAL]: 'Circle',
+      [TOOLS.DIAMOND]: 'Diamond',
+      [TOOLS.TEXT]: 'Teks Baru',
+    }[toolKey];
+
+    const newNode = {
+      id: `node-${Date.now()}`,
+      type: 'shape',
+      position: clampedPosition,
+      data: {
+        label: shapeLabel,
+        shapeType: toolKey,
+        iconName: 'none',
+      },
+      style: {
+        width: size.width,
+        height: size.height,
+        background: isText ? 'transparent' : '#F8FAFC',
+        border: isText ? '1.5px dashed #94A3B8' : '2px solid #2563EB',
+        borderRadius: toolKey === TOOLS.OVAL ? '9999px' : '8px',
+        color: '#0F172A',
+        fontSize: isText ? '18px' : '14px',
+        fontWeight: isText ? 700 : 600,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        textAlign: 'center',
+      },
+    };
+
+    addNode(newNode);
+    setSelectedNode(newNode.id);
+    setRightSidebarOpen(true);
+    setActiveTool(TOOLS.SELECT);
+  }, [addNode, setActiveTool, setRightSidebarOpen, setSelectedNode]);
+
+  const getVisibleCanvasCenter = useCallback(() => {
+    const bounds = canvasRef.current?.getBoundingClientRect();
+    if (!bounds) {
+      return { x: A4_WIDTH / 2, y: A4_HEIGHT / 2 };
+    }
+
+    return screenToFlowPosition({
+      x: bounds.left + bounds.width / 2,
+      y: bounds.top + bounds.height / 2,
+    });
+  }, [screenToFlowPosition]);
+
+  const handlePaneClick = useCallback((event) => {
+    if ([TOOLS.RECTANGLE, TOOLS.OVAL, TOOLS.DIAMOND, TOOLS.TEXT].includes(activeTool)) {
+      createShapeNode(activeTool, screenToFlowPosition({ x: event.clientX, y: event.clientY }));
+      return;
+    }
     setSelectedNode(null);
-  }, [setSelectedNode]);
+  }, [activeTool, createShapeNode, screenToFlowPosition, setSelectedNode]);
 
   const handleToolClick = (toolKey) => {
-    setActiveTool(toolKey);
-    
-    // Add shapes
     if ([TOOLS.RECTANGLE, TOOLS.OVAL, TOOLS.DIAMOND, TOOLS.TEXT].includes(toolKey)) {
-      const newNode = {
-        id: `node-${Date.now()}`,
-        type: 'shape', // Use the registered base shape
-        position: { x: window.innerWidth / 2 - 100, y: window.innerHeight / 2 - 100 },
-        data: {
-          label: toolKey === TOOLS.TEXT ? 'Teks Baru' : 'Bentuk Baru',
-          iconName: 'none',
-          style: {
-            width: 120,
-            height: toolKey === TOOLS.TEXT ? 40 : 80,
-            background: toolKey === TOOLS.TEXT ? 'transparent' : '#FFFFFF',
-            border: toolKey === TOOLS.TEXT ? 'none' : '1.5px solid #E2E8F0',
-            borderRadius: toolKey === TOOLS.OVAL ? '50%' : toolKey === TOOLS.DIAMOND ? '0%' : '8px',
-            transform: toolKey === TOOLS.DIAMOND ? 'rotate(45deg)' : 'none',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }
-        }
-      };
-      
-      // If it's a diamond, we need the inner text to counter-rotate
-      if (toolKey === TOOLS.DIAMOND) {
-         newNode.data.innerTransform = 'rotate(-45deg)';
-      }
-
-      useWorkspaceStore.getState().addNode(newNode);
-      setActiveTool(TOOLS.SELECT); // Revert to select
+      setActiveTool(toolKey);
     } else if (toolKey === TOOLS.DELETE) {
        // Handle delete explicitly if selected via toolbar
        if (selectedNodeId) {
-         useWorkspaceStore.getState().deleteNode(selectedNodeId);
+         deleteNode(selectedNodeId);
          setSelectedNode(null);
        }
        setActiveTool(TOOLS.SELECT); // Revert to select
+    } else {
+      setActiveTool(toolKey);
+    }
+  };
+
+  const handleToolDoubleClick = (toolKey) => {
+    if ([TOOLS.RECTANGLE, TOOLS.OVAL, TOOLS.DIAMOND, TOOLS.TEXT].includes(toolKey)) {
+      createShapeNode(toolKey, getVisibleCanvasCenter());
     }
   };
 
@@ -224,6 +268,24 @@ function WorkspaceEditor() {
         </div>
 
         <div className="flex items-center gap-2 flex-1 justify-end">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={undo}
+            disabled={historyPast.length === 0}
+            title="Undo"
+          >
+            <Undo2 size={16} />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={redo}
+            disabled={historyFuture.length === 0}
+            title="Redo"
+          >
+            <Redo2 size={16} />
+          </Button>
           <Button variant="ghost" size="sm" onClick={handleSave} icon={<Save size={16} />}>
             Save
           </Button>
@@ -261,6 +323,7 @@ function WorkspaceEditor() {
                   key={t.key}
                   className={`flex items-center justify-center w-9 h-9 rounded-md text-muted-foreground transition-colors cursor-pointer hover:bg-muted hover:text-foreground ${activeTool === t.key ? 'bg-primary/20 text-primary' : ''}`}
                   onClick={() => handleToolClick(t.key)}
+                  onDoubleClick={() => handleToolDoubleClick(t.key)}
                   title={t.label}
                 >
                   {t.icon}
@@ -285,12 +348,12 @@ function WorkspaceEditor() {
               onPaneClick={handlePaneClick}
               nodeTypes={nodeTypes}
               nodesDraggable={isEditMode && !isFlashcardOpen && activeTool === TOOLS.SELECT}
-              panOnDrag={!isEditMode || activeTool === TOOLS.HAND}
+              panOnDrag={!isEditMode || activeTool === TOOLS.HAND ? [0, 1, 2] : false}
               selectionOnDrag={isEditMode && activeTool === TOOLS.SELECT}
               panOnScroll={true}
               zoomOnScroll={true}
               nodesConnectable={isEditMode && activeTool === TOOLS.SELECT}
-              elementsSelectable={isEditMode}
+              elementsSelectable={isEditMode && activeTool === TOOLS.SELECT}
               deleteKeyCode={['Backspace', 'Delete']}
               defaultEdgeOptions={{ type: 'smoothstep', animated: false }}
               fitView
@@ -298,6 +361,8 @@ function WorkspaceEditor() {
               colorMode="light"
               minZoom={0.3}
               maxZoom={2}
+              translateExtent={[[0, 0], [A4_WIDTH, A4_HEIGHT]]}
+              nodeExtent={[[0, 0], [A4_WIDTH, A4_HEIGHT]]}
               proOptions={{ hideAttribution: true }}
             >
               <Background variant="dots" gap={20} size={1} color="#d4d8e0" />

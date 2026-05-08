@@ -13,29 +13,23 @@ export default function DetailPanel() {
   const selectedNodeId = useUIStore((s) => s.selectedNodeId);
   const setSelectedNode = useUIStore((s) => s.setSelectedNode);
   const nodes = useWorkspaceStore((s) => s.nodes);
-  const setNodes = useWorkspaceStore((s) => s.setNodes);
+  const updateNodeStyle = useWorkspaceStore((s) => s.updateNodeStyle);
 
   const selectedNode = nodes.find((n) => n.id === selectedNodeId);
 
   const [localStyle, setLocalStyle] = useState({});
-  const [localData, setLocalData] = useState({});
 
   useEffect(() => {
     if (selectedNode) {
-      setLocalStyle(selectedNode.style || {});
-      setLocalData(selectedNode.data || {});
+      setLocalStyle({ ...(selectedNode.data?.style || {}), ...(selectedNode.style || {}) });
     }
   }, [selectedNode]);
 
   const applyStyle = useCallback((updates) => {
     const newStyle = { ...localStyle, ...updates };
     setLocalStyle(newStyle);
-    setNodes(
-      nodes.map((n) =>
-        n.id === selectedNodeId ? { ...n, style: { ...n.style, ...updates } } : n
-      )
-    );
-  }, [localStyle, nodes, selectedNodeId, setNodes]);
+    updateNodeStyle(selectedNodeId, updates);
+  }, [localStyle, selectedNodeId, updateNodeStyle]);
 
   const applySize = useCallback((key, value) => {
     const num = parseInt(value, 10);

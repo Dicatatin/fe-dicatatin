@@ -27,8 +27,12 @@ export default function BaseNode({
   const [editValue, setEditValue] = useState(data?.label || '');
   const textareaRef = useRef(null);
   const isEditMode = useUIStore((s) => s.isEditMode);
+  const activeTool = useUIStore((s) => s.activeTool);
+  const selectedNodeId = useUIStore((s) => s.selectedNodeId);
   const setSelectedNode = useUIStore((s) => s.setSelectedNode);
   const updateNode = useWorkspaceStore((s) => s.updateNode);
+  const isSelected = selected || selectedNodeId === id;
+  const shapeClass = data?.shapeType ? `shape-node shape-node--${data.shapeType}` : '';
 
   useEffect(() => {
     setEditValue(data?.label || '');
@@ -42,10 +46,10 @@ export default function BaseNode({
   }, [isEditing]);
 
   const handleDoubleClick = useCallback((e) => {
-    if (!isEditMode) return;
+    if (!isEditMode || activeTool !== 'select') return;
     e.stopPropagation();
     setIsEditing(true);
-  }, [isEditMode]);
+  }, [activeTool, isEditMode]);
 
   const handleBlur = useCallback(() => {
     setIsEditing(false);
@@ -67,8 +71,9 @@ export default function BaseNode({
 
   const handleClick = useCallback((e) => {
     e.stopPropagation();
+    if (activeTool !== 'select') return;
     setSelectedNode(id);
-  }, [id, setSelectedNode]);
+  }, [activeTool, id, setSelectedNode]);
 
   const positionMap = {
     top: Position.Top,
@@ -79,7 +84,7 @@ export default function BaseNode({
 
   return (
     <div
-      className={`base-node ${selected ? 'base-node--selected' : ''} ${className}`}
+      className={`base-node ${isSelected ? 'base-node--selected' : ''} ${shapeClass} ${className}`}
       style={{
         minWidth,
         minHeight,
@@ -93,7 +98,7 @@ export default function BaseNode({
       {resizable && isEditMode && (
         <NodeResizer
           color="var(--accent-primary)"
-          isVisible={selected}
+          isVisible={isSelected}
           minWidth={minWidth}
           minHeight={minHeight}
           lineStyle={{ borderColor: 'var(--accent-primary)', borderWidth: 1 }}

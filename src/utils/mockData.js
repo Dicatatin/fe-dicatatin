@@ -7,25 +7,25 @@ import { METHODS } from './constants';
 // ── Mind Map ──
 export function getMindMapMockData() {
   const nodes = [
-    { id: 'mm1', type: 'mindMapRoot', position: { x: 280, y: 40 }, data: { label: 'Biologi Sel' } },
-    { id: 'mm2', type: 'mindMapBranch', position: { x: 80, y: 180 }, data: { label: 'Mitosis', depth: 1 } },
-    { id: 'mm3', type: 'mindMapBranch', position: { x: 480, y: 180 }, data: { label: 'Meiosis', depth: 1 } },
-    { id: 'mm4', type: 'mindMapBranch', position: { x: 10, y: 310 }, data: { label: 'Profase', depth: 2 } },
-    { id: 'mm5', type: 'mindMapBranch', position: { x: 160, y: 310 }, data: { label: 'Metafase', depth: 2 } },
-    { id: 'mm6', type: 'mindMapBranch', position: { x: 400, y: 310 }, data: { label: 'Meiosis I', depth: 2 } },
-    { id: 'mm7', type: 'mindMapBranch', position: { x: 560, y: 310 }, data: { label: 'Meiosis II', depth: 2 } },
-    { id: 'mm8', type: 'mindMapBranch', position: { x: 10, y: 420 }, data: { label: 'Kromosom kondensasi', depth: 3 } },
-    { id: 'mm9', type: 'mindMapBranch', position: { x: 160, y: 420 }, data: { label: 'Kromosom di equator', depth: 3 } },
+    { id: 'mm1', type: 'mindMapRoot', position: { x: 305, y: 48 }, data: { label: 'Biologi Sel' } },
+    { id: 'mm2', type: 'mindMapBranch', position: { x: 135, y: 182 }, data: { label: 'Mitosis', depth: 1 } },
+    { id: 'mm3', type: 'mindMapBranch', position: { x: 455, y: 182 }, data: { label: 'Meiosis', depth: 1 } },
+    { id: 'mm4', type: 'mindMapBranch', position: { x: 54, y: 332 }, data: { label: 'Profase', depth: 2 } },
+    { id: 'mm5', type: 'mindMapBranch', position: { x: 214, y: 332 }, data: { label: 'Metafase', depth: 2 } },
+    { id: 'mm6', type: 'mindMapBranch', position: { x: 394, y: 332 }, data: { label: 'Meiosis I', depth: 2 } },
+    { id: 'mm7', type: 'mindMapBranch', position: { x: 554, y: 332 }, data: { label: 'Meiosis II', depth: 2 } },
+    { id: 'mm8', type: 'mindMapBranch', position: { x: 26, y: 472 }, data: { label: 'Kromosom kondensasi', depth: 3 } },
+    { id: 'mm9', type: 'mindMapBranch', position: { x: 190, y: 472 }, data: { label: 'Kromosom di equator', depth: 3 } },
   ];
   const edges = [
-    { id: 'e-mm1-2', source: 'mm1', target: 'mm2', style: { stroke: '#93C5FD', strokeWidth: 2 } },
-    { id: 'e-mm1-3', source: 'mm1', target: 'mm3', style: { stroke: '#86EFAC', strokeWidth: 2 } },
-    { id: 'e-mm2-4', source: 'mm2', target: 'mm4', style: { stroke: '#93C5FD', strokeWidth: 1.5 } },
-    { id: 'e-mm2-5', source: 'mm2', target: 'mm5', style: { stroke: '#93C5FD', strokeWidth: 1.5 } },
-    { id: 'e-mm3-6', source: 'mm3', target: 'mm6', style: { stroke: '#86EFAC', strokeWidth: 1.5 } },
-    { id: 'e-mm3-7', source: 'mm3', target: 'mm7', style: { stroke: '#86EFAC', strokeWidth: 1.5 } },
-    { id: 'e-mm4-8', source: 'mm4', target: 'mm8', style: { stroke: '#FCD34D', strokeWidth: 1 } },
-    { id: 'e-mm5-9', source: 'mm5', target: 'mm9', style: { stroke: '#FCD34D', strokeWidth: 1 } },
+    { id: 'e-mm1-2', source: 'mm1', target: 'mm2', sourceHandle: 'bottom-source', targetHandle: 'top-target', type: 'smoothstep', style: { stroke: '#93C5FD', strokeWidth: 2 } },
+    { id: 'e-mm1-3', source: 'mm1', target: 'mm3', sourceHandle: 'bottom-source', targetHandle: 'top-target', type: 'smoothstep', style: { stroke: '#86EFAC', strokeWidth: 2 } },
+    { id: 'e-mm2-4', source: 'mm2', target: 'mm4', sourceHandle: 'bottom-source', targetHandle: 'top-target', type: 'smoothstep', style: { stroke: '#93C5FD', strokeWidth: 1.5 } },
+    { id: 'e-mm2-5', source: 'mm2', target: 'mm5', sourceHandle: 'bottom-source', targetHandle: 'top-target', type: 'smoothstep', style: { stroke: '#93C5FD', strokeWidth: 1.5 } },
+    { id: 'e-mm3-6', source: 'mm3', target: 'mm6', sourceHandle: 'bottom-source', targetHandle: 'top-target', type: 'smoothstep', style: { stroke: '#86EFAC', strokeWidth: 1.5 } },
+    { id: 'e-mm3-7', source: 'mm3', target: 'mm7', sourceHandle: 'bottom-source', targetHandle: 'top-target', type: 'smoothstep', style: { stroke: '#86EFAC', strokeWidth: 1.5 } },
+    { id: 'e-mm4-8', source: 'mm4', target: 'mm8', sourceHandle: 'bottom-source', targetHandle: 'top-target', type: 'smoothstep', style: { stroke: '#FCD34D', strokeWidth: 1 } },
+    { id: 'e-mm5-9', source: 'mm5', target: 'mm9', sourceHandle: 'bottom-source', targetHandle: 'top-target', type: 'smoothstep', style: { stroke: '#FCD34D', strokeWidth: 1 } },
   ];
   const flashcards = [
     { id: 'fc1', question: 'Apa perbedaan utama Mitosis dan Meiosis?', answer: 'Mitosis: 2 sel diploid identik. Meiosis: 4 sel haploid berbeda.' },
