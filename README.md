@@ -1,16 +1,95 @@
-# React + Vite
+# DICATAT.IN 🚀
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Elevating the Way You Learn, Inclusively.**
 
-Currently, two official plugins are available:
+DICATAT.IN is an AI-powered note-taking platform designed to transform messy handwritten notes into beautifully structured digital formats. Built with modern web technologies, it features an interactive canvas, support for 7 proven note-taking methods, auto-layout capabilities, and an integrated flashcard system for active recall.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## ✨ Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+*   **7 Proven Note-Taking Methods**: 
+    *   🧠 Mind Map
+    *   📋 Cornell Notes
+    *   📦 Boxing
+    *   📊 Charting
+    *   🔗 Zettelkasten
+    *   🎨 Sketchnoting
+    *   💡 Feynman Technique
+*   **Interactive Infinite Canvas**: Powered by React Flow, featuring a fully editable A4 workspace with drag-and-drop, connection edges, and zoom controls.
+*   **Smart Auto-Layout**: Integrated `elkjs` layout engine automatically organizes your notes based on the chosen method's optimal structure.
+*   **Accessibility First**: Built-in Dyslexia-friendly mode featuring the OpenDyslexic font and tailored spacing adjustments.
+*   **Active Recall**: Integrated 3D-flippable flashcard system automatically generated from your notes.
+*   **PDF Export**: High-fidelity vector-like PDF exports of your A4 canvas.
+*   **Dark-Blue Premium Theme**: A carefully crafted, professional dark mode UI with glassmorphism effects and fluid animations.
 
-## Expanding the ESLint configuration
+## 🛠️ Tech Stack
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+*   **Framework**: React 18+ (Vite)
+*   **Routing**: React Router v6
+*   **State Management**: Zustand
+*   **Canvas Engine**: React Flow (`@xyflow/react`)
+*   **Auto Layout**: ELK (`elkjs`)
+*   **PDF Export**: `html2canvas` & `jsPDF`
+*   **Icons**: Lucide React
+*   **Styling**: Vanilla CSS with comprehensive Design System Variables
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+*   Node.js (v18 or higher recommended)
+*   npm or yarn
+
+### Installation
+
+1.  Clone the repository:
+    ```bash
+    git clone https://github.com/yourusername/project-dicatatin.git
+    cd project-dicatatin
+    ```
+
+2.  Install dependencies:
+    ```bash
+    npm install
+    ```
+
+3.  Start the development server:
+    ```bash
+    npm run dev
+    ```
+
+4.  Open your browser and navigate to `http://localhost:5173`.
+
+> **Note**: The application currently uses a mock authentication flow for development. You can log in using any email and password on the login page to access the application.
+
+## 📂 Project Structure
+
+```text
+src/
+├── assets/            # Static files, fonts, and images
+├── components/        # Reusable UI components (Buttons, Cards, Modals)
+├── features/          # Domain-specific modules
+│   ├── auth/          # Login, Signup, AuthGuards
+│   ├── flashcard/     # Flashcard popup and flipping logic
+│   ├── home/          # Workspace gallery and creation modals
+│   ├── landing/       # Landing page sections
+│   └── workspace/     # Core editor, Canvas, Right Sidebar, Custom Nodes
+├── hooks/             # Custom React hooks (useAutosave, useKeyboardShortcuts)
+├── layouts/           # Page wrapper layouts
+├── pages/             # Route-level components
+├── services/          # API and external service integrations
+├── stores/            # Zustand global state stores
+├── styles/            # Global CSS variables and animations
+└── utils/             # Helper functions, constants, mock data, and ELK configs
+```
+
+## ⌨️ Keyboard Shortcuts
+
+*   `Ctrl + S` / `Cmd + S`: Save Workspace
+*   `Ctrl + E` / `Cmd + E`: Toggle Edit / View Mode
+*   `Escape`: Deselect current node or close modals/flashcards
+
+## 📄 License
+
+This project is licensed under the MIT License.

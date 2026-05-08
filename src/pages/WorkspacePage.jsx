@@ -5,12 +5,12 @@ import {
   Background,
   Controls,
   MiniMap,
-  useReactFlow,
   ReactFlowProvider,
 } from '@xyflow/react';
 import {
   Save, Download, Eye, Edit3, BookOpen, ArrowLeft,
   MousePointer2, Hand, Square, Circle, Type, Minus, Trash2, Diamond,
+  PanelRightOpen, PanelRightClose,
 } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Toggle from '@/components/ui/Toggle';
@@ -18,62 +18,95 @@ import useWorkspaceStore from '@/stores/useWorkspaceStore';
 import useUIStore from '@/stores/useUIStore';
 import useFlashcardStore from '@/stores/useFlashcardStore';
 import FlashcardPopup from '@/features/flashcard/FlashcardPopup';
-import { A4_WIDTH, A4_HEIGHT, TOOLS } from '@/utils/constants';
+import DetailPanel from '@/features/workspace/panels/DetailPanel';
+import { nodeTypes } from '@/features/workspace/nodes';
+import { A4_WIDTH, A4_HEIGHT, TOOLS, METHODS } from '@/utils/constants';
+import { getMockDataByMethod } from '@/utils/mockData';
+import { exportCanvasToPDF } from '@/utils/pdfExport';
+import useAutosave from '@/hooks/useAutosave';
+import useKeyboardShortcuts from '@/hooks/useKeyboardShortcuts';
+import '@/features/workspace/nodes/nodes.css';
 import './WorkspacePage.css';
 
-const MOCK_NODES = [
-  { id: '1', type: 'default', position: { x: 280, y: 40 }, data: { label: 'Biologi Sel' }, style: { background: '#3B82F6', color: '#fff', fontWeight: 700, borderRadius: 8, padding: '12px 24px', border: 'none', fontSize: '16px' } },
-  { id: '2', type: 'default', position: { x: 80, y: 180 }, data: { label: 'Mitosis' }, style: { background: '#162D4A', color: '#E8EDF5', borderRadius: 8, padding: '10px 18px', border: '1px solid rgba(148,163,184,0.18)' } },
-  { id: '3', type: 'default', position: { x: 450, y: 180 }, data: { label: 'Meiosis' }, style: { background: '#162D4A', color: '#E8EDF5', borderRadius: 8, padding: '10px 18px', border: '1px solid rgba(148,163,184,0.18)' } },
-  { id: '4', type: 'default', position: { x: 30, y: 320 }, data: { label: 'Profase' }, style: { background: '#0F2035', color: '#94A3B8', borderRadius: 8, padding: '8px 14px', border: '1px solid rgba(148,163,184,0.1)', fontSize: '13px' } },
-  { id: '5', type: 'default', position: { x: 200, y: 320 }, data: { label: 'Metafase' }, style: { background: '#0F2035', color: '#94A3B8', borderRadius: 8, padding: '8px 14px', border: '1px solid rgba(148,163,184,0.1)', fontSize: '13px' } },
-  { id: '6', type: 'default', position: { x: 400, y: 320 }, data: { label: 'Meiosis I' }, style: { background: '#0F2035', color: '#94A3B8', borderRadius: 8, padding: '8px 14px', border: '1px solid rgba(148,163,184,0.1)', fontSize: '13px' } },
-  { id: '7', type: 'default', position: { x: 560, y: 320 }, data: { label: 'Meiosis II' }, style: { background: '#0F2035', color: '#94A3B8', borderRadius: 8, padding: '8px 14px', border: '1px solid rgba(148,163,184,0.1)', fontSize: '13px' } },
-];
+// Method mapping from workspace list mock
+const WORKSPACE_METHODS = {
+  '1': METHODS.MIND_MAP,
+  '2': METHODS.CORNELL,
+  '3': METHODS.FEYNMAN,
+  '4': METHODS.BOXING,
+  '5': METHODS.CHARTING,
+  '6': METHODS.ZETTELKASTEN,
+  '7': METHODS.SKETCHNOTING,
+};
 
-const MOCK_EDGES = [
-  { id: 'e1-2', source: '1', target: '2', type: 'default', style: { stroke: '#3B82F6', strokeWidth: 2 } },
-  { id: 'e1-3', source: '1', target: '3', type: 'default', style: { stroke: '#2DD4BF', strokeWidth: 2 } },
-  { id: 'e2-4', source: '2', target: '4', type: 'default', style: { stroke: '#3B82F680', strokeWidth: 1.5 } },
-  { id: 'e2-5', source: '2', target: '5', type: 'default', style: { stroke: '#3B82F680', strokeWidth: 1.5 } },
-  { id: 'e3-6', source: '3', target: '6', type: 'default', style: { stroke: '#2DD4BF80', strokeWidth: 1.5 } },
-  { id: 'e3-7', source: '3', target: '7', type: 'default', style: { stroke: '#2DD4BF80', strokeWidth: 1.5 } },
-];
-
-const MOCK_FLASHCARDS = [
-  { id: 'fc1', question: 'Apa perbedaan utama antara Mitosis dan Meiosis?', answer: 'Mitosis menghasilkan 2 sel identik (diploid), sedangkan Meiosis menghasilkan 4 sel berbeda (haploid) untuk reproduksi seksual.' },
-  { id: 'fc2', question: 'Sebutkan tahapan Mitosis!', answer: 'Profase → Metafase → Anafase → Telofase (PMAT).' },
-  { id: 'fc3', question: 'Mengapa Meiosis terdiri dari dua tahap?', answer: 'Meiosis I memisahkan kromosom homolog, Meiosis II memisahkan kromatid saudara, sehingga jumlah kromosom menjadi setengah (haploid).' },
-];
+const WORKSPACE_NAMES = {
+  '1': 'Biologi Sel - Mitosis & Meiosis',
+  '2': 'Fotosintesis - Cornell Notes',
+  '3': 'Hukum Newton - Feynman Method',
+  '4': 'Sistem Tubuh Manusia - Boxing',
+  '5': 'Mitosis vs Meiosis - Charting',
+  '6': 'Evolusi Darwin - Zettelkasten',
+  '7': 'Tata Surya - Sketchnoting',
+};
 
 function WorkspaceEditor() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { nodes, edges, onNodesChange, onEdgesChange, onConnect, setNodes, setEdges, workspaceName, setWorkspaceName, setFlashcards } = useWorkspaceStore();
-  const { isEditMode, setEditMode, activeTool, setActiveTool, isFlashcardOpen, setFlashcardOpen, saveStatus, setSaveStatus } = useUIStore();
+  const {
+    nodes, edges, onNodesChange, onEdgesChange, onConnect,
+    setNodes, setEdges, workspaceName, setWorkspaceName,
+  } = useWorkspaceStore();
+  const {
+    isEditMode, setEditMode, activeTool, setActiveTool,
+    isFlashcardOpen, setFlashcardOpen, saveStatus, setSaveStatus,
+    selectedNodeId, setSelectedNode, isRightSidebarOpen, setRightSidebarOpen,
+  } = useUIStore();
   const { setCards } = useFlashcardStore();
   const [isEditingName, setIsEditingName] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [currentMethod, setCurrentMethod] = useState(METHODS.MIND_MAP);
   const nameInputRef = useRef(null);
+  const canvasRef = useRef(null);
 
+  // Load method-specific mock data
   useEffect(() => {
-    // Load mock data
-    setNodes(MOCK_NODES);
-    setEdges(MOCK_EDGES);
-    setWorkspaceName('Biologi Sel - Mitosis & Meiosis');
-    setFlashcards(MOCK_FLASHCARDS);
-  }, [id, setNodes, setEdges, setWorkspaceName, setFlashcards]);
+    const method = WORKSPACE_METHODS[id] || METHODS.MIND_MAP;
+    setCurrentMethod(method);
+    const mockData = getMockDataByMethod(method);
+    setNodes(mockData.nodes);
+    setEdges(mockData.edges);
+    setCards(mockData.flashcards);
+    setWorkspaceName(WORKSPACE_NAMES[id] || 'Untitled Workspace');
+  }, [id, setNodes, setEdges, setCards, setWorkspaceName]);
 
-  const handleSave = () => {
+  // Autosave hook
+  useAutosave(2000);
+
+  // Save handler
+  const handleSave = useCallback(() => {
     setSaveStatus('saving');
-    setTimeout(() => setSaveStatus('saved'), 1000);
-  };
+    setTimeout(() => setSaveStatus('saved'), 800);
+  }, [setSaveStatus]);
 
-  const handleExportPDF = () => {
-    alert('PDF Export — akan diimplementasi dengan @react-pdf/renderer');
-  };
+  // Keyboard shortcuts
+  useKeyboardShortcuts({ onSave: handleSave });
+
+  // PDF export
+  const handleExportPDF = useCallback(async () => {
+    if (!canvasRef.current) return;
+    setIsExporting(true);
+    try {
+      await exportCanvasToPDF(canvasRef.current, workspaceName);
+    } catch (err) {
+      console.error('PDF export failed:', err);
+    } finally {
+      setIsExporting(false);
+    }
+  }, [workspaceName]);
 
   const handleFlashcard = () => {
-    setCards(MOCK_FLASHCARDS);
+    const mockData = getMockDataByMethod(currentMethod);
+    setCards(mockData.flashcards);
     setFlashcardOpen(true);
     setEditMode(false);
   };
@@ -85,13 +118,59 @@ function WorkspaceEditor() {
     }
   };
 
-  const handleNameBlur = () => {
-    setIsEditingName(false);
-  };
+  const handleNameBlur = () => setIsEditingName(false);
+  const handleNameKeyDown = (e) => { if (e.key === 'Enter') setIsEditingName(false); };
 
-  const handleNameKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      setIsEditingName(false);
+  // Handle node selection from React Flow
+  const handleNodeClick = useCallback((_, node) => {
+    setSelectedNode(node.id);
+    setRightSidebarOpen(true);
+  }, [setSelectedNode, setRightSidebarOpen]);
+
+  const handlePaneClick = useCallback(() => {
+    setSelectedNode(null);
+  }, [setSelectedNode]);
+
+  const handleToolClick = (toolKey) => {
+    setActiveTool(toolKey);
+    
+    // Add shapes
+    if ([TOOLS.RECTANGLE, TOOLS.OVAL, TOOLS.DIAMOND, TOOLS.TEXT].includes(toolKey)) {
+      const newNode = {
+        id: `node-${Date.now()}`,
+        type: 'shape', // Use the registered base shape
+        position: { x: window.innerWidth / 2 - 100, y: window.innerHeight / 2 - 100 },
+        data: {
+          label: toolKey === TOOLS.TEXT ? 'Teks Baru' : 'Bentuk Baru',
+          iconName: 'none',
+          style: {
+            width: 120,
+            height: toolKey === TOOLS.TEXT ? 40 : 80,
+            background: toolKey === TOOLS.TEXT ? 'transparent' : '#FFFFFF',
+            border: toolKey === TOOLS.TEXT ? 'none' : '1.5px solid #E2E8F0',
+            borderRadius: toolKey === TOOLS.OVAL ? '50%' : toolKey === TOOLS.DIAMOND ? '0%' : '8px',
+            transform: toolKey === TOOLS.DIAMOND ? 'rotate(45deg)' : 'none',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }
+        }
+      };
+      
+      // If it's a diamond, we need the inner text to counter-rotate
+      if (toolKey === TOOLS.DIAMOND) {
+         newNode.data.innerTransform = 'rotate(-45deg)';
+      }
+
+      useWorkspaceStore.getState().addNode(newNode);
+      setActiveTool(TOOLS.SELECT); // Revert to select
+    } else if (toolKey === TOOLS.DELETE) {
+       // Handle delete explicitly if selected via toolbar
+       if (selectedNodeId) {
+         useWorkspaceStore.getState().deleteNode(selectedNodeId);
+         setSelectedNode(null);
+       }
+       setActiveTool(TOOLS.SELECT); // Revert to select
     }
   };
 
@@ -103,7 +182,7 @@ function WorkspaceEditor() {
     { key: TOOLS.OVAL, icon: <Circle size={18} />, label: 'Oval' },
     { key: TOOLS.DIAMOND, icon: <Diamond size={18} />, label: 'Diamond' },
     { key: TOOLS.TEXT, icon: <Type size={18} />, label: 'Text' },
-    { key: TOOLS.LINE, icon: <Minus size={18} />, label: 'Line' },
+    // { key: TOOLS.LINE, icon: <Minus size={18} />, label: 'Line' }, // Disabling line manual add for now
     { key: 'divider2' },
     { key: TOOLS.DELETE, icon: <Trash2 size={18} />, label: 'Delete' },
   ];
@@ -140,11 +219,7 @@ function WorkspaceEditor() {
         <div className="ws-topbar-center">
           <div className="ws-mode-toggle">
             {isEditMode ? <Edit3 size={14} /> : <Eye size={14} />}
-            <Toggle
-              checked={isEditMode}
-              onChange={setEditMode}
-              size="sm"
-            />
+            <Toggle checked={isEditMode} onChange={setEditMode} size="sm" />
             <span className="text-xs">{isEditMode ? 'Edit' : 'View'}</span>
           </div>
         </div>
@@ -153,12 +228,26 @@ function WorkspaceEditor() {
           <Button variant="ghost" size="sm" onClick={handleSave} icon={<Save size={16} />}>
             Save
           </Button>
-          <Button variant="secondary" size="sm" onClick={handleExportPDF} icon={<Download size={16} />}>
-            Export PDF
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleExportPDF}
+            icon={<Download size={16} />}
+            disabled={isExporting}
+          >
+            {isExporting ? 'Exporting...' : 'Export PDF'}
           </Button>
           <Button size="sm" onClick={handleFlashcard} icon={<BookOpen size={16} />}>
             Belajar
           </Button>
+          <button
+            className="ws-tool-btn"
+            onClick={() => setRightSidebarOpen(!isRightSidebarOpen)}
+            title="Toggle Properties"
+            style={{ marginLeft: 4 }}
+          >
+            {isRightSidebarOpen ? <PanelRightClose size={18} /> : <PanelRightOpen size={18} />}
+          </button>
         </div>
       </div>
 
@@ -166,14 +255,14 @@ function WorkspaceEditor() {
         {/* Left Toolbar */}
         {isEditMode && (
           <div className="ws-toolbar animate-fade-in-left">
-            {tools.map((t, i) =>
+            {tools.map((t) =>
               t.key.startsWith('divider') ? (
                 <div key={t.key} className="ws-toolbar-divider" />
               ) : (
                 <button
                   key={t.key}
                   className={`ws-tool-btn ${activeTool === t.key ? 'active' : ''}`}
-                  onClick={() => setActiveTool(t.key)}
+                  onClick={() => handleToolClick(t.key)}
                   title={t.label}
                 >
                   {t.icon}
@@ -185,16 +274,27 @@ function WorkspaceEditor() {
 
         {/* Canvas */}
         <div className="ws-canvas-area">
-          <div className="ws-a4-wrapper" style={{ width: A4_WIDTH, height: A4_HEIGHT }}>
+          <div className="ws-a4-wrapper" ref={canvasRef} style={{ width: A4_WIDTH, height: A4_HEIGHT }}>
             <ReactFlow
               nodes={nodes}
               edges={edges}
               onNodesChange={isEditMode ? onNodesChange : undefined}
               onEdgesChange={isEditMode ? onEdgesChange : undefined}
               onConnect={isEditMode ? onConnect : undefined}
-              nodesDraggable={isEditMode && !isFlashcardOpen}
-              nodesConnectable={isEditMode}
+              onNodesDelete={useWorkspaceStore.getState().onNodesDelete}
+              onEdgesDelete={useWorkspaceStore.getState().onEdgesDelete}
+              onNodeClick={handleNodeClick}
+              onPaneClick={handlePaneClick}
+              nodeTypes={nodeTypes}
+              nodesDraggable={isEditMode && !isFlashcardOpen && activeTool === TOOLS.SELECT}
+              panOnDrag={!isEditMode || activeTool === TOOLS.HAND}
+              selectionOnDrag={isEditMode && activeTool === TOOLS.SELECT}
+              panOnScroll={true}
+              zoomOnScroll={true}
+              nodesConnectable={isEditMode && activeTool === TOOLS.SELECT}
               elementsSelectable={isEditMode}
+              deleteKeyCode={['Backspace', 'Delete']}
+              defaultEdgeOptions={{ type: 'smoothstep', animated: false }}
               fitView
               fitViewOptions={{ padding: 0.15 }}
               colorMode="light"
@@ -213,6 +313,9 @@ function WorkspaceEditor() {
             </ReactFlow>
           </div>
         </div>
+
+        {/* Right Sidebar */}
+        {isRightSidebarOpen && isEditMode && <DetailPanel />}
       </div>
 
       {/* Flashcard popup */}

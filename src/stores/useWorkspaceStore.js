@@ -42,7 +42,7 @@ const useWorkspaceStore = create((set, get) => ({
         },
         {
           id: '2',
-          name: 'Sejarah Indonesia - Proklamasi',
+          name: 'Fotosintesis - Cornell Notes',
           method: 'cornell',
           createdAt: '2026-04-28T09:00:00Z',
           updatedAt: '2026-05-03T12:00:00Z',
@@ -50,10 +50,42 @@ const useWorkspaceStore = create((set, get) => ({
         },
         {
           id: '3',
-          name: 'Fisika - Hukum Newton',
+          name: 'Hukum Newton - Feynman Method',
           method: 'feynman',
           createdAt: '2026-04-25T14:00:00Z',
           updatedAt: '2026-05-02T18:00:00Z',
+          thumbnail: null,
+        },
+        {
+          id: '4',
+          name: 'Sistem Tubuh Manusia - Boxing',
+          method: 'boxing',
+          createdAt: '2026-04-22T11:00:00Z',
+          updatedAt: '2026-05-01T09:00:00Z',
+          thumbnail: null,
+        },
+        {
+          id: '5',
+          name: 'Mitosis vs Meiosis - Charting',
+          method: 'charting',
+          createdAt: '2026-04-20T08:00:00Z',
+          updatedAt: '2026-04-30T14:00:00Z',
+          thumbnail: null,
+        },
+        {
+          id: '6',
+          name: 'Evolusi Darwin - Zettelkasten',
+          method: 'zettelkasten',
+          createdAt: '2026-04-18T13:00:00Z',
+          updatedAt: '2026-04-28T16:00:00Z',
+          thumbnail: null,
+        },
+        {
+          id: '7',
+          name: 'Tata Surya - Sketchnoting',
+          method: 'sketchnoting',
+          createdAt: '2026-04-15T10:00:00Z',
+          updatedAt: '2026-04-25T11:00:00Z',
           thumbnail: null,
         },
       ];
@@ -103,6 +135,19 @@ const useWorkspaceStore = create((set, get) => ({
         n.id === id ? { ...n, data: { ...n.data, ...data } } : n
       ),
     });
+  },
+
+  onNodesDelete: (deletedNodes) => {
+    const deletedIds = deletedNodes.map(n => n.id);
+    set({
+      nodes: get().nodes.filter((n) => !deletedIds.includes(n.id)),
+      edges: get().edges.filter((e) => !deletedIds.includes(e.source) && !deletedIds.includes(e.target)),
+    });
+  },
+
+  onEdgesDelete: (deletedEdges) => {
+    const deletedIds = deletedEdges.map(e => e.id);
+    set({ edges: get().edges.filter((e) => !deletedIds.includes(e.id)) });
   },
 
   deleteNode: (id) => {

@@ -3,6 +3,27 @@
    Dark-Blue Professional Theme
    ============================================ */
 
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: url('https://unpkg.com/opendyslexic@1.0.3/fonts/OpenDyslexic-Regular.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: url('https://unpkg.com/opendyslexic@1.0.3/fonts/OpenDyslexic-Bold.otf') format('opentype');
+  font-weight: bold;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: url('https://unpkg.com/opendyslexic@1.0.3/fonts/OpenDyslexic-Italic.otf') format('opentype');
+  font-weight: normal;
+  font-style: italic;
+}
+
 /* --- CSS Reset --- */
 *,
 *::before,
@@ -140,11 +161,16 @@ html {
 
 /* --- Dyslexia Mode Override --- */
 body.dyslexia-mode {
-  --font-primary: 'OpenDyslexic', 'Comic Sans MS', sans-serif;
-  --font-display: 'OpenDyslexic', 'Comic Sans MS', sans-serif;
+  --font-primary: 'OpenDyslexic', sans-serif !important;
+  --font-display: 'OpenDyslexic', sans-serif !important;
+  font-family: 'OpenDyslexic', sans-serif !important;
   letter-spacing: 0.05em;
   word-spacing: 0.1em;
   line-height: 1.8;
+}
+
+body.dyslexia-mode * {
+  font-family: 'OpenDyslexic', sans-serif !important;
 }
 
 /* --- Base Body --- */

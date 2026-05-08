@@ -55,27 +55,102 @@ export default function HomePage() {
       <Navbar />
       <main className="home-main">
         <div className="container">
+          
+          {/* AI Prompt Section - Replaces Modal */}
+          <div className="ai-prompt-section glass-card">
+            <h2 className="ai-prompt-title">
+              <span className="gradient-text">Ubah Catatan Jadi Pengetahuan</span> ✨
+            </h2>
+            <p className="text-secondary mb-6">
+              Upload foto catatan tanganmu dan biarkan AI menyusunnya menjadi struktur yang rapih.
+            </p>
+            
+            {isProcessing ? (
+              <div className="ai-processing-state">
+                <PipelineLoader stage={pipelineStage} />
+              </div>
+            ) : (
+              <div className="ai-prompt-container">
+                {/* Upload area */}
+                <div className="upload-area inline-upload" onClick={() => document.getElementById('file-upload')?.click()}>
+                  {uploadedFile ? (
+                    <div className="upload-preview inline-preview">
+                      <img src={URL.createObjectURL(uploadedFile)} alt="Preview" />
+                      <p className="text-sm font-medium mt-2">{uploadedFile.name}</p>
+                      <button 
+                        className="btn btn-ghost btn-sm mt-2" 
+                        onClick={(e) => { e.stopPropagation(); setUploadedFile(null); }}
+                      >
+                        Ganti Foto
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="upload-icon-wrapper">📷</div>
+                      <p className="font-semibold mt-3">Upload Foto Catatan</p>
+                      <p className="text-sm text-muted mt-1">JPG atau PNG — Drag & drop atau klik</p>
+                    </>
+                  )}
+                  <input
+                    id="file-upload"
+                    type="file"
+                    accept="image/jpeg,image/png"
+                    style={{ display: 'none' }}
+                    onChange={(e) => setUploadedFile(e.target.files?.[0] || null)}
+                  />
+                </div>
+
+                {/* Method selector inline */}
+                <div className="inline-method-selector">
+                  <h4 className="mb-3">Pilih Metode Belajar</h4>
+                  <div className="method-selector-grid inline-grid">
+                    {Object.entries(METHOD_INFO).map(([key, info]) => (
+                      <div
+                        key={key}
+                        className={`method-option ${selectedMethod === key ? 'active' : ''}`}
+                        onClick={() => setSelectedMethod(key)}
+                        style={selectedMethod === key ? { borderColor: info.color, background: `${info.color}10` } : {}}
+                      >
+                        <span className="method-option-icon">{info.icon}</span>
+                        <span className="method-option-label">{info.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <div className="mt-6 flex justify-end">
+                    <Button
+                      disabled={!selectedMethod || !uploadedFile}
+                      onClick={handleStartProcessing}
+                      size="lg"
+                    >
+                      Mulai Proses AI ✨
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="divider mt-8 mb-8" />
+
           {/* Header */}
           <div className="home-header">
             <div>
               <h1 className="home-title">Library Catatan</h1>
               <p className="text-secondary">Kelola semua workspace catatan Anda</p>
             </div>
-            <Button onClick={() => setShowNewModal(true)} icon={<Plus size={18} />}>
-              New Workspace
-            </Button>
-          </div>
-
-          {/* Search */}
-          <div className="home-search">
-            <Search size={18} className="home-search-icon" />
-            <input
-              type="text"
-              placeholder="Cari catatan..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="home-search-input"
-            />
+            
+            {/* Search */}
+            <div className="home-search">
+              <Search size={18} className="home-search-icon" />
+              <input
+                type="text"
+                placeholder="Cari catatan..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="home-search-input"
+              />
+            </div>
           </div>
 
           {/* Grid */}
@@ -89,10 +164,7 @@ export default function HomePage() {
             <div className="home-empty">
               <Grid size={48} className="text-muted" />
               <h3>Belum ada catatan</h3>
-              <p className="text-secondary">Buat workspace baru untuk mulai transformasi catatan.</p>
-              <Button onClick={() => setShowNewModal(true)} icon={<Plus size={18} />}>
-                Buat Workspace Pertama
-              </Button>
+              <p className="text-secondary">Mulai buat workspace baru menggunakan AI di atas.</p>
             </div>
           ) : (
             <div className="home-grid">
@@ -121,68 +193,6 @@ export default function HomePage() {
           )}
         </div>
       </main>
-
-      {/* New Workspace Modal */}
-      <Modal
-        isOpen={showNewModal}
-        onClose={() => { setShowNewModal(false); setIsProcessing(false); setSelectedMethod(null); setUploadedFile(null); }}
-        title="Workspace Baru"
-        size="lg"
-      >
-        {isProcessing ? (
-          <PipelineLoader stage={pipelineStage} />
-        ) : (
-          <div className="new-ws-content">
-            {/* Upload area */}
-            <div className="upload-area" onClick={() => document.getElementById('file-upload')?.click()}>
-              {uploadedFile ? (
-                <div className="upload-preview">
-                  <img src={URL.createObjectURL(uploadedFile)} alt="Preview" />
-                  <p className="text-sm">{uploadedFile.name}</p>
-                </div>
-              ) : (
-                <>
-                  <span style={{ fontSize: '36px' }}>📷</span>
-                  <p className="font-semibold">Upload Foto Catatan</p>
-                  <p className="text-sm text-muted">JPG atau PNG — Drag & drop atau klik</p>
-                </>
-              )}
-              <input
-                id="file-upload"
-                type="file"
-                accept="image/jpeg,image/png"
-                style={{ display: 'none' }}
-                onChange={(e) => setUploadedFile(e.target.files?.[0] || null)}
-              />
-            </div>
-
-            {/* Method selector */}
-            <h4 style={{ marginTop: 'var(--space-6)', marginBottom: 'var(--space-3)' }}>Pilih Metode</h4>
-            <div className="method-selector-grid">
-              {Object.entries(METHOD_INFO).map(([key, info]) => (
-                <div
-                  key={key}
-                  className={`method-option ${selectedMethod === key ? 'active' : ''}`}
-                  onClick={() => setSelectedMethod(key)}
-                  style={selectedMethod === key ? { borderColor: info.color, background: `${info.color}10` } : {}}
-                >
-                  <span className="method-option-icon">{info.icon}</span>
-                  <span className="method-option-label">{info.label}</span>
-                </div>
-              ))}
-            </div>
-
-            <Button
-              fullWidth
-              disabled={!selectedMethod}
-              onClick={handleStartProcessing}
-              style={{ marginTop: 'var(--space-6)' }}
-            >
-              Proses dengan AI ✨
-            </Button>
-          </div>
-        )}
-      </Modal>
     </div>
   );
 }
