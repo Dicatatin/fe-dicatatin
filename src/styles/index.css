@@ -5,22 +5,29 @@
 
 @font-face {
   font-family: 'OpenDyslexic';
-  src: url('https://unpkg.com/opendyslexic@1.0.3/fonts/OpenDyslexic-Regular.otf') format('opentype');
+  src: url('../assets/opendyslexic/OpenDyslexic-Regular.otf') format('opentype');
   font-weight: normal;
   font-style: normal;
 }
 
 @font-face {
   font-family: 'OpenDyslexic';
-  src: url('https://unpkg.com/opendyslexic@1.0.3/fonts/OpenDyslexic-Bold.otf') format('opentype');
+  src: url('../assets/opendyslexic/OpenDyslexic-Bold.otf') format('opentype');
   font-weight: bold;
   font-style: normal;
 }
 
 @font-face {
   font-family: 'OpenDyslexic';
-  src: url('https://unpkg.com/opendyslexic@1.0.3/fonts/OpenDyslexic-Italic.otf') format('opentype');
+  src: url('../assets/opendyslexic/OpenDyslexic-Italic.otf') format('opentype');
   font-weight: normal;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: url('../assets/opendyslexic/OpenDyslexic-BoldItalic.otf') format('opentype');
+  font-weight: bold;
   font-style: italic;
 }
 
