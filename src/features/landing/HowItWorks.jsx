@@ -12,9 +12,6 @@ export default function HowItWorks() {
     <section className="py-20 md:py-32" id="how-it-works">
       <div className="container mx-auto px-4">
         <div className="text-center mb-20">
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest bg-primary/10 text-primary border border-primary/20 mb-4">
-            ⚡ Cara Kerja
-          </span>
           <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight">4 Langkah Menuju <span className="bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent">Catatan Cerdas</span></h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 relative">

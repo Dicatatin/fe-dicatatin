@@ -17,7 +17,7 @@ export default function ZettelNode(props) {
       <div className="base-node__content" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
         {zettelId && <span className="zettel-node__id">{zettelId}</span>}
         <div className="zettel-node__content">
-          <span className="base-node__label" style={{ textAlign: 'left' }}>
+          <span className="base-node__label">
             {props.data?.label || 'Note'}
           </span>
         </div>

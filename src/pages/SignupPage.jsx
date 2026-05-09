@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff, User } from 'lucide-react';
+import { Mail, Lock, User, GraduationCap } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Toggle from '@/components/ui/Toggle';
@@ -13,7 +13,7 @@ export default function SignupPage() {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -69,7 +69,7 @@ export default function SignupPage() {
           </p>
           <div className="mt-auto w-full">
             <div className="glass-card p-6 flex flex-col gap-4 items-center text-center">
-              <span className="text-4xl">🎓</span>
+              <GraduationCap size={42} className="text-primary" />
               <p className="text-sm font-medium">Gratis untuk mahasiswa Indonesia</p>
             </div>
           </div>

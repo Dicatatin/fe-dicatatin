@@ -11,9 +11,6 @@ export default function MethodShowcase() {
     <section className="py-20 md:py-32" id="methods">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest bg-primary/10 text-primary border border-primary/20 mb-4">
-            🎯 6+ Metode Belajar
-          </span>
           <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-4">
             Bukan Sekadar <span className="bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent">AI Wrapper</span>
           </h2>
@@ -34,7 +31,7 @@ export default function MethodShowcase() {
                 onClick={() => setActiveMethod(key)}
                 style={isActive ? { color: m.color, borderColor: m.color } : {}}
               >
-                <span className="text-xl">{m.icon}</span>
+                <span className="flex h-7 w-7 items-center justify-center rounded-md bg-secondary text-[10px] font-black" style={{ color: m.color }}>{m.icon}</span>
                 <span className="whitespace-nowrap uppercase tracking-wider text-[10px]">{m.label}</span>
               </button>
             );
@@ -199,15 +196,15 @@ function SketchnotingPreview() {
       <div className="text-xl font-black italic rotate-[-2deg] bg-yellow-500/20 px-4 py-2 border-2 border-yellow-500/40 rounded-xl">JUDUL BESAR</div>
       <div className="flex gap-8">
         <div className="flex flex-col items-center gap-2">
-          <div className="text-2xl">📌</div>
+          <div className="h-8 w-8 rounded-full border-2 border-teal-400" />
           <div className="h-1.5 w-12 bg-muted-foreground/20 rounded-full" />
         </div>
         <div className="flex flex-col items-center gap-2">
-          <div className="text-2xl">💡</div>
+          <div className="h-8 w-8 rounded border-2 border-amber-400 rotate-3" />
           <div className="h-1.5 w-12 bg-muted-foreground/20 rounded-full" />
         </div>
         <div className="flex flex-col items-center gap-2">
-          <div className="text-2xl">🔗</div>
+          <div className="h-8 w-8 rounded-lg border-2 border-blue-400 -rotate-3" />
           <div className="h-1.5 w-12 bg-muted-foreground/20 rounded-full" />
         </div>
       </div>

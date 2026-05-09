@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Grid, Search } from 'lucide-react';
+import { Camera, Grid, Search, Sparkles } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
@@ -55,7 +55,7 @@ export default function HomePage() {
           {/* AI Prompt Section */}
           <Card className="p-8 mb-6 text-center glass-card border-none">
             <h2 className="text-3xl font-bold mb-2">
-              <span className="bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent">Ubah Catatan Jadi Pengetahuan</span> ✨
+              <span className="bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent">Ubah Catatan Jadi Pengetahuan</span>
             </h2>
             <p className="text-muted-foreground mb-6">
               Upload foto catatan tanganmu dan biarkan AI menyusunnya menjadi struktur yang rapih.
@@ -66,7 +66,7 @@ export default function HomePage() {
                 <PipelineLoader stage={pipelineStage} />
               </div>
             ) : (
-              <div className="flex flex-col gap-6 text-left max-w-[800px] mx-auto">
+              <div className="flex flex-col gap-6 text-left w-full max-w-[1100px] mx-auto">
                 {/* Upload area */}
                 <div 
                   className="bg-background border-2 border-dashed border-border rounded-xl p-8 text-center cursor-pointer hover:border-primary hover:bg-secondary/50 transition-all group" 
@@ -89,7 +89,7 @@ export default function HomePage() {
                     </div>
                   ) : (
                     <>
-                      <div className="text-5xl mb-3 group-hover:scale-110 transition-transform duration-300">📷</div>
+                      <Camera size={44} className="mx-auto mb-3 text-primary group-hover:scale-110 transition-transform duration-300" />
                       <p className="font-bold text-lg">Upload Foto Catatan</p>
                       <p className="text-sm text-muted-foreground mt-1">JPG atau PNG — Drag & drop atau klik</p>
                     </>
@@ -116,7 +116,7 @@ export default function HomePage() {
                         className={`flex flex-col items-center gap-2 p-3 border rounded-xl cursor-pointer transition-all hover:bg-muted ${selectedMethod === key ? 'border-primary bg-primary/10 ring-1 ring-primary' : 'border-border'}`}
                         onClick={() => setSelectedMethod(key)}
                       >
-                        <span className="text-2xl">{info.icon}</span>
+                        <span className="flex h-9 w-9 items-center justify-center rounded-md bg-secondary text-xs font-black" style={{ color: info.color }}>{info.icon}</span>
                         <span className="text-[10px] font-bold uppercase tracking-tight text-center leading-tight">{info.label}</span>
                       </div>
                     ))}
@@ -129,7 +129,8 @@ export default function HomePage() {
                       size="lg"
                       className="px-8 shadow-lg shadow-primary/20"
                     >
-                      Mulai Proses AI ✨
+                      Mulai Proses AI
+                      <Sparkles size={18} className="ml-2" />
                     </Button>
                   </div>
                 </div>
@@ -176,14 +177,16 @@ export default function HomePage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {filteredWorkspaces.map((ws, i) => (
+              {filteredWorkspaces.map((ws) => (
                 <Card
                   key={ws.id}
                   className="group overflow-hidden cursor-pointer border-border hover:border-primary hover:shadow-xl hover:shadow-primary/5 transition-all duration-300"
                   onClick={() => navigate(`/workspace/${ws.id}`)}
                 >
                   <div className="h-[140px] bg-gradient-to-br from-secondary/50 to-muted/30 flex items-center justify-center relative overflow-hidden">
-                    <div className="text-5xl opacity-40 group-hover:scale-125 transition-transform duration-500">{METHOD_INFO[ws.method]?.icon || '📝'}</div>
+                    <div className="flex h-16 w-16 items-center justify-center rounded-lg border border-border bg-background/70 text-xl font-black opacity-60 group-hover:scale-125 transition-transform duration-500">
+                      {METHOD_INFO[ws.method]?.icon || 'DC'}
+                    </div>
                     <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
                   <div className="p-4 px-5">

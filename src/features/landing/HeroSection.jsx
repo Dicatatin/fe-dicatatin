@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Sparkles, Shield } from 'lucide-react';
+import { ArrowRight, Sparkles } from 'lucide-react';
 import Button from '@/components/ui/Button';
 
 export default function HeroSection() {
@@ -13,16 +13,6 @@ export default function HeroSection() {
       <div className="container mx-auto px-4">
         <div className="flex flex-col lg:flex-row items-center gap-16">
           <div className="flex-1 text-center lg:text-left">
-            {/* Badges */}
-            <div className="flex flex-wrap justify-center lg:justify-start gap-3 mb-8">
-              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest bg-primary/10 text-primary border border-primary/20">
-                <Sparkles size={14} /> Competition Ready
-              </span>
-              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest bg-teal-500/10 text-teal-400 border border-teal-500/20">
-                <Shield size={14} /> Designed for Accessibility
-              </span>
-            </div>
-
             <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight leading-[1.1] mb-6">
               Ubah Catatan Berantakan Menjadi{' '}
               <span className="bg-gradient-to-r from-primary via-blue-400 to-teal-400 bg-clip-text text-transparent">Pengetahuan Terstruktur</span>{' '}
@@ -34,31 +24,29 @@ export default function HeroSection() {
               Pilih dari 6 metode belajar dan transformasi catatan Anda menjadi alat belajar aktif.
             </p>
 
-            <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4 mb-16">
-              <Button size="xl" onClick={() => navigate('/signup')} className="shadow-xl shadow-primary/20">
+            <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-5 mb-16">
+              <Button size="xl" onClick={() => navigate('/signup')} className="min-w-[180px] shadow-xl shadow-primary/20">
                 Mulai Gratis
                 <ArrowRight size={20} className="ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
-              <Button variant="outline" size="xl" onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}>
+              <Button variant="outline" size="xl" onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })} className="min-w-[190px]">
                 Lihat Cara Kerja
               </Button>
             </div>
 
             {/* Stats */}
-            <div className="flex flex-wrap justify-center lg:justify-start items-center gap-8 md:gap-12 border-t border-border pt-10">
-              <div className="flex flex-col gap-1">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto lg:mx-0 border-t border-border pt-10">
+              <div className="rounded-lg border border-border bg-secondary/30 px-5 py-4 text-center">
                 <span className="text-3xl font-bold">&lt;30s</span>
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Transformasi</span>
+                <span className="block text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Transformasi</span>
               </div>
-              <div className="hidden md:block w-px h-10 bg-border" />
-              <div className="flex flex-col gap-1">
+              <div className="rounded-lg border border-border bg-secondary/30 px-5 py-4 text-center">
                 <span className="text-3xl font-bold">90%</span>
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Akurasi OCR</span>
+                <span className="block text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Akurasi OCR</span>
               </div>
-              <div className="hidden md:block w-px h-10 bg-border" />
-              <div className="flex flex-col gap-1">
+              <div className="rounded-lg border border-border bg-secondary/30 px-5 py-4 text-center">
                 <span className="text-3xl font-bold">6+</span>
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Metode Belajar</span>
+                <span className="block text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Metode Belajar</span>
               </div>
             </div>
           </div>
@@ -68,7 +56,7 @@ export default function HeroSection() {
             <div className="relative w-full aspect-square flex items-center justify-center">
               {/* Before Card */}
               <div className="absolute top-1/4 left-0 w-64 p-6 rounded-2xl bg-secondary/50 border border-border backdrop-blur-xl shadow-2xl -rotate-12 hover:rotate-0 transition-all duration-500 z-10 group cursor-default">
-                <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-4">📝 Sebelum</div>
+                <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-4">Sebelum</div>
                 <div className="space-y-3">
                   <div className="h-2 bg-muted-foreground/20 rounded-full w-[80%] -rotate-2" />
                   <div className="h-2 bg-muted-foreground/20 rounded-full w-[65%] rotate-1" />
@@ -88,7 +76,7 @@ export default function HeroSection() {
               {/* After Card */}
               <div className="absolute bottom-1/4 right-0 w-80 p-6 rounded-2xl bg-background border border-border backdrop-blur-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] rotate-6 hover:rotate-0 transition-all duration-500 z-30 group cursor-default">
                 <div className="text-[10px] font-bold uppercase tracking-widest text-primary mb-6 flex justify-between items-center">
-                  <span>✨ Sesudah</span>
+                  <span>Sesudah</span>
                   <span className="px-2 py-0.5 rounded bg-primary/10 text-[8px]">Mind Map</span>
                 </div>
                 <div className="relative w-full h-40 flex items-center justify-center">

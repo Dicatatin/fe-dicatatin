@@ -22,7 +22,6 @@ export default function FlashcardPopup() {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border bg-secondary/30">
           <div className="flex items-center gap-3">
-            <span className="text-xl">🧠</span>
             <h4 className="font-bold text-lg">Flashcards</h4>
           </div>
           <div className="flex items-center gap-4">

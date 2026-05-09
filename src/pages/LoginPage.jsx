@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, FileText } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Toggle from '@/components/ui/Toggle';
@@ -12,7 +12,7 @@ export default function LoginPage() {
   const { setUser, setSession, isDyslexiaMode, setDyslexiaMode } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -64,7 +64,7 @@ export default function LoginPage() {
           </p>
           <div className="mt-auto w-full">
             <div className="glass-card p-6 flex flex-col gap-4 items-center text-center">
-              <span className="text-4xl">📝 → 🧠</span>
+              <FileText size={40} className="text-primary" />
               <p className="text-sm font-medium">Dari tulisan tangan ke pengetahuan terstruktur</p>
             </div>
           </div>

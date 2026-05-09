@@ -4,16 +4,12 @@ export default function AccessibilitySpotlight() {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <div className="order-2 lg:order-1">
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest bg-teal-500/10 text-teal-400 border border-teal-500/20 mb-4">
-              ♿ Aksesibilitas
-            </span>
             <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-6 leading-tight">Dyslexia-Friendly <span className="bg-gradient-to-r from-teal-400 to-blue-400 bg-clip-text text-transparent">Mode</span></h2>
             <p className="text-lg text-muted-foreground mb-8 leading-relaxed max-w-xl">
               Platform ini dirancang inklusif. Pelajar dengan disleksia mendapat akses ke font 
               <span className="text-foreground font-semibold"> OpenDyslexic</span>, spacing yang lebih lega, dan visual yang membantu pemrosesan informasi.
             </p>
             <div className="inline-flex items-center gap-3 p-4 rounded-xl bg-background border border-border shadow-sm">
-              <span className="text-2xl">🎓</span>
               <div className="flex flex-col">
                 <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">United Nations Goal</span>
                 <span className="text-sm font-semibold">SDG 4: Quality Education — Inclusive & Equitable</span>

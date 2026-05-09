@@ -13,8 +13,7 @@ export default function CornellCueNode(props) {
       handlePositions={['right']}
     >
       <div className="base-node__content">
-        <span className="cornell-zone-label">CUE</span>
-        <span className="base-node__label" style={{ textAlign: 'left', width: '100%' }}>
+        <span className="base-node__label" style={{ width: '100%' }}>
           {props.data?.label || 'Keyword'}
         </span>
       </div>

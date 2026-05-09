@@ -1,12 +1,12 @@
 import { Link } from 'react-router-dom';
 import Button from '@/components/ui/Button';
-import { Home } from 'lucide-react';
+import { FileQuestion, Home } from 'lucide-react';
 
 export default function NotFoundPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-6 text-center p-8 bg-background">
       <div className="w-24 h-24 rounded-full bg-secondary flex items-center justify-center text-5xl shadow-xl shadow-black/10 border border-border mb-4">
-        📝
+        <FileQuestion size={44} className="text-primary" />
       </div>
       <div className="space-y-2">
         <h1 className="text-6xl font-black tracking-tighter text-primary">

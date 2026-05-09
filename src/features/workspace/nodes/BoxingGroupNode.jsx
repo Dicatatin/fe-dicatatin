@@ -6,7 +6,7 @@ const COLORS = ['teal', 'blue', 'purple', 'amber', 'pink'];
 /**
  * Boxing Group Node — parent container with pastel dashed border
  */
-export default function BoxingGroupNode({ id, data, selected }) {
+export default function BoxingGroupNode({ data, selected, style = {} }) {
   const colorVariant = data?.colorIndex != null
     ? COLORS[data.colorIndex % COLORS.length]
     : COLORS[0];
@@ -14,7 +14,12 @@ export default function BoxingGroupNode({ id, data, selected }) {
   return (
     <div
       className={`base-node boxing-group-node boxing-group--${colorVariant} ${selected ? 'base-node--selected' : ''}`}
-      style={{ width: data?.width || 300, height: data?.height || 200 }}
+      style={{
+        width: data?.width || 300,
+        height: data?.height || 200,
+        ...data?.style,
+        ...style,
+      }}
     >
       <div className="boxing-group-node__header">
         {data?.label || 'Group'}

@@ -12,7 +12,6 @@ export default function BaseNode({
   id,
   data,
   selected,
-  type,
   // Customization props
   className = '',
   style = {},
@@ -31,12 +30,15 @@ export default function BaseNode({
   const selectedNodeId = useUIStore((s) => s.selectedNodeId);
   const setSelectedNode = useUIStore((s) => s.setSelectedNode);
   const updateNode = useWorkspaceStore((s) => s.updateNode);
+  const updateNodeStyle = useWorkspaceStore((s) => s.updateNodeStyle);
   const isSelected = selected || selectedNodeId === id;
   const shapeClass = data?.shapeType ? `shape-node shape-node--${data.shapeType}` : '';
-
-  useEffect(() => {
-    setEditValue(data?.label || '');
-  }, [data?.label]);
+  const mergedStyle = {
+    minWidth,
+    minHeight,
+    ...data?.style,
+    ...style,
+  };
 
   useEffect(() => {
     if (isEditing && textareaRef.current) {
@@ -48,8 +50,9 @@ export default function BaseNode({
   const handleDoubleClick = useCallback((e) => {
     if (!isEditMode || activeTool !== 'select') return;
     e.stopPropagation();
+    setEditValue(data?.label || '');
     setIsEditing(true);
-  }, [activeTool, isEditMode]);
+  }, [activeTool, data?.label, isEditMode]);
 
   const handleBlur = useCallback(() => {
     setIsEditing(false);
@@ -85,27 +88,23 @@ export default function BaseNode({
   return (
     <div
       className={`base-node ${isSelected ? 'base-node--selected' : ''} ${shapeClass} ${className}`}
-      style={{
-        minWidth,
-        minHeight,
-        ...data?.style,
-        ...style,
-      }}
+      style={mergedStyle}
       onDoubleClick={handleDoubleClick}
       onClick={handleClick}
     >
       {/* Resizer */}
       {resizable && isEditMode && (
         <NodeResizer
-          color="var(--accent-primary)"
+          color="#3B82F6"
           isVisible={isSelected}
           minWidth={minWidth}
           minHeight={minHeight}
-          lineStyle={{ borderColor: 'var(--accent-primary)', borderWidth: 1 }}
+          onResizeEnd={(_, params) => updateNodeStyle(id, { width: params.width, height: params.height })}
+          lineStyle={{ borderColor: '#3B82F6', borderWidth: 1 }}
           handleStyle={{
             width: 8,
             height: 8,
-            backgroundColor: 'var(--accent-primary)',
+            backgroundColor: '#3B82F6',
             borderRadius: 2,
           }}
         />

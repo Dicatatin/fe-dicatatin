@@ -18,9 +18,9 @@ export function Spinner({ size = 24, className }) {
 
 export function PipelineLoader({ stage = 'scanning' }) {
   const stages = [
-    { key: 'scanning', label: 'Scanning', icon: '📷' },
-    { key: 'sanitizing', label: 'AI Processing', icon: '🤖' },
-    { key: 'visualizing', label: 'Visualizing', icon: '✨' },
+    { key: 'scanning', label: 'Scanning', icon: '01' },
+    { key: 'sanitizing', label: 'AI Processing', icon: '02' },
+    { key: 'visualizing', label: 'Visualizing', icon: '03' },
   ];
 
   const currentIndex = stages.findIndex((s) => s.key === stage);

@@ -14,7 +14,7 @@ export default function FeynmanRefinementNode(props) {
     >
       <div className="base-node__content" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
         <div className="feynman-refinement-node__label">Refinement</div>
-        <span className="base-node__label" style={{ textAlign: 'left' }}>
+        <span className="base-node__label">
           {props.data?.label || 'Study more...'}
         </span>
       </div>

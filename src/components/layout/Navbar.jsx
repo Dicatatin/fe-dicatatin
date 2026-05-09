@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { LogOut, Settings, User, BookOpen, ChevronDown } from 'lucide-react';
+import { LogOut, Settings, BookOpen, ChevronDown } from 'lucide-react';
 import useAuthStore from '@/stores/useAuthStore';
 import { signOutUser } from '@/services/authService';
 import Toggle from '@/components/ui/Toggle';
 import Button from '@/components/ui/Button';
+import logo from '@/assets/main-logo.png';
 
 export default function Navbar({ showAuth = true }) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -29,6 +30,14 @@ export default function Navbar({ showAuth = true }) {
     navigate('/');
   };
 
+  const handleLandingNav = (sectionId) => (event) => {
+    event.preventDefault();
+    document.getElementById(sectionId)?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    });
+  };
+
   const getInitials = () => {
     const name = user?.user_metadata?.full_name || user?.email || 'U';
     return name.charAt(0).toUpperCase();
@@ -38,22 +47,25 @@ export default function Navbar({ showAuth = true }) {
     <nav className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-md">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         {/* Brand */}
-        <Link to={user ? '/home' : '/'} className="flex items-center gap-2 group">
-          <span className="text-xl font-bold tracking-tighter">
-            DICATAT<span className="text-primary group-hover:text-blue-400 transition-colors">.IN</span>
-          </span>
+        <Link to={user ? '/home' : '/'} className="flex items-center gap-3 group">
+          <img src={logo} alt="DICATAT.IN" className="h-9 w-auto object-contain" />
         </Link>
 
         {/* Nav links (landing page) */}
         {!user && (
-          <div className="hidden md:flex gap-8">
-            {['Fitur', 'Metode', 'Cara Kerja'].map((item) => (
+          <div className="hidden md:flex gap-9">
+            {[
+              { label: 'Fitur', id: 'features' },
+              { label: 'Metode', id: 'methods' },
+              { label: 'Cara Kerja', id: 'how-it-works' },
+            ].map((item) => (
               <a 
-                key={item}
-                href={`#${item.toLowerCase().replace(' ', '-')}`} 
-                className="text-sm font-semibold text-muted-foreground transition-colors hover:text-primary"
+                key={item.id}
+                href={`#${item.id}`}
+                onClick={handleLandingNav(item.id)}
+                className="text-base font-semibold text-muted-foreground transition-colors hover:text-primary"
               >
-                {item}
+                {item.label}
               </a>
             ))}
           </div>

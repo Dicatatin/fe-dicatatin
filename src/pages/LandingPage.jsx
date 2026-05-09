@@ -6,6 +6,7 @@ import HowItWorks from '@/features/landing/HowItWorks';
 import AccessibilitySpotlight from '@/features/landing/AccessibilitySpotlight';
 import TrustSection from '@/features/landing/TrustSection';
 import CTASection from '@/features/landing/CTASection';
+import logo from '@/assets/main-logo.png';
 
 export default function LandingPage() {
   return (
@@ -24,9 +25,7 @@ export default function LandingPage() {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-8">
             <div className="flex flex-col items-center md:items-start gap-2">
-              <span className="text-xl font-bold tracking-tighter">
-                DICATAT<span className="text-primary">.IN</span>
-              </span>
+              <img src={logo} alt="DICATAT.IN" className="h-10 w-auto object-contain" />
               <p className="text-sm text-muted-foreground">Elevating the Way You Learn, Inclusively.</p>
             </div>
             

@@ -13,8 +13,7 @@ export default function CornellNoteNode(props) {
       handlePositions={['left']}
     >
       <div className="base-node__content">
-        <span className="cornell-zone-label">NOTES</span>
-        <span className="base-node__label" style={{ textAlign: 'left', width: '100%', whiteSpace: 'pre-wrap' }}>
+        <span className="base-node__label" style={{ width: '100%', whiteSpace: 'pre-wrap' }}>
           {props.data?.label || 'Detail notes...'}
         </span>
       </div>

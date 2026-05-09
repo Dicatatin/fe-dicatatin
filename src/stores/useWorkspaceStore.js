@@ -205,9 +205,75 @@ const useWorkspaceStore = create((set, get) => ({
     set((state) => ({
       ...pushHistory(state),
       nodes: state.nodes.map((n) =>
-        n.id === id ? { ...n, style: { ...n.style, ...style } } : n
+        n.id === id
+          ? {
+              ...n,
+              style: { ...n.style, ...style },
+              data: { ...n.data, style: { ...(n.data?.style || {}), ...style } },
+            }
+          : n
       ),
     }));
+  },
+
+  updateEdgeStyle: (id, style) => {
+    set((state) => ({
+      ...pushHistory(state),
+      edges: state.edges.map((e) =>
+        e.id === id ? { ...e, style: { ...e.style, ...style } } : e
+      ),
+    }));
+  },
+
+  updateEdge: (id, data) => {
+    set((state) => ({
+      ...pushHistory(state),
+      edges: state.edges.map((e) =>
+        e.id === id ? { ...e, ...data } : e
+      ),
+    }));
+  },
+
+  moveNodeLayer: (id, direction) => {
+    set((state) => {
+      const current = state.nodes.find((n) => n.id === id);
+      if (!current) return state;
+      const zIndex = current.zIndex ?? current.style?.zIndex ?? 0;
+      const nextZ = {
+        forward: zIndex + 1,
+        backward: zIndex - 1,
+        front: 100,
+        back: -100,
+      }[direction] ?? zIndex;
+
+      return {
+        ...pushHistory(state),
+        nodes: state.nodes.map((n) =>
+          n.id === id ? { ...n, zIndex: nextZ, style: { ...n.style, zIndex: nextZ } } : n
+        ),
+      };
+    });
+  },
+
+  moveEdgeLayer: (id, direction) => {
+    set((state) => {
+      const current = state.edges.find((e) => e.id === id);
+      if (!current) return state;
+      const zIndex = current.zIndex ?? 0;
+      const nextZ = {
+        forward: zIndex + 1,
+        backward: zIndex - 1,
+        front: 100,
+        back: -100,
+      }[direction] ?? zIndex;
+
+      return {
+        ...pushHistory(state),
+        edges: state.edges.map((e) =>
+          e.id === id ? { ...e, zIndex: nextZ } : e
+        ),
+      };
+    });
   },
 
   onNodesDelete: (deletedNodes) => {

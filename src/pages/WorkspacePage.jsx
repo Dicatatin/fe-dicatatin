@@ -18,6 +18,7 @@ import Toggle from '@/components/ui/Toggle';
 import useWorkspaceStore from '@/stores/useWorkspaceStore';
 import useUIStore from '@/stores/useUIStore';
 import useFlashcardStore from '@/stores/useFlashcardStore';
+import useAuthStore from '@/stores/useAuthStore';
 import FlashcardPopup from '@/features/flashcard/FlashcardPopup';
 import DetailPanel from '@/features/workspace/panels/DetailPanel';
 import { nodeTypes } from '@/features/workspace/nodes';
@@ -56,29 +57,28 @@ function WorkspaceEditor() {
   const {
     nodes, edges, onNodesChange, onEdgesChange, onConnect,
     loadGraph, workspaceName, setWorkspaceName,
-    addNode, deleteNode, undo, redo, historyPast, historyFuture,
+    addNode, deleteNode, deleteEdge, undo, redo, historyPast, historyFuture,
   } = useWorkspaceStore();
   const {
     isEditMode, setEditMode, activeTool, setActiveTool,
     isFlashcardOpen, setFlashcardOpen, saveStatus, setSaveStatus,
-    selectedNodeId, setSelectedNode, isRightSidebarOpen, setRightSidebarOpen,
+    selectedNodeId, selectedEdgeId, setSelectedNode, setSelectedEdge, isRightSidebarOpen, setRightSidebarOpen,
   } = useUIStore();
   const { setCards } = useFlashcardStore();
+  const { isDyslexiaMode, setDyslexiaMode } = useAuthStore();
   const [isEditingName, setIsEditingName] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
-  const [currentMethod, setCurrentMethod] = useState(METHODS.MIND_MAP);
+  const currentMethod = WORKSPACE_METHODS[id] || METHODS.MIND_MAP;
   const nameInputRef = useRef(null);
   const canvasRef = useRef(null);
 
   // Load method-specific mock data
   useEffect(() => {
-    const method = WORKSPACE_METHODS[id] || METHODS.MIND_MAP;
-    setCurrentMethod(method);
-    const mockData = getMockDataByMethod(method);
+    const mockData = getMockDataByMethod(currentMethod);
     loadGraph(mockData.nodes, mockData.edges);
     setCards(mockData.flashcards);
     setWorkspaceName(WORKSPACE_NAMES[id] || 'Untitled Workspace');
-  }, [id, loadGraph, setCards, setWorkspaceName]);
+  }, [currentMethod, id, loadGraph, setCards, setWorkspaceName]);
 
   // Autosave hook
   useAutosave(2000);
@@ -128,15 +128,21 @@ function WorkspaceEditor() {
     setRightSidebarOpen(true);
   }, [setSelectedNode, setRightSidebarOpen]);
 
+  const handleEdgeClick = useCallback((event, edge) => {
+    event.stopPropagation();
+    setSelectedEdge(edge.id);
+    setRightSidebarOpen(true);
+  }, [setRightSidebarOpen, setSelectedEdge]);
+
   const createShapeNode = useCallback((toolKey, position) => {
     const isText = toolKey === TOOLS.TEXT;
     const size = {
       width: isText ? 180 : 140,
       height: isText ? 48 : toolKey === TOOLS.OVAL ? 100 : 96,
     };
-    const clampedPosition = {
-      x: Math.max(8, Math.min(A4_WIDTH - size.width - 8, position.x - size.width / 2)),
-      y: Math.max(8, Math.min(A4_HEIGHT - size.height - 8, position.y - size.height / 2)),
+    const unclampedPosition = {
+      x: position.x - size.width / 2,
+      y: position.y - size.height / 2,
     };
     const shapeLabel = {
       [TOOLS.RECTANGLE]: 'Rectangle',
@@ -148,7 +154,7 @@ function WorkspaceEditor() {
     const newNode = {
       id: `node-${Date.now()}`,
       type: 'shape',
-      position: clampedPosition,
+      position: unclampedPosition,
       data: {
         label: shapeLabel,
         shapeType: toolKey,
@@ -204,6 +210,9 @@ function WorkspaceEditor() {
        if (selectedNodeId) {
          deleteNode(selectedNodeId);
          setSelectedNode(null);
+       } else if (selectedEdgeId) {
+         deleteEdge(selectedEdgeId);
+         setSelectedEdge(null);
        }
        setActiveTool(TOOLS.SELECT); // Revert to select
     } else {
@@ -259,15 +268,16 @@ function WorkspaceEditor() {
           </div>
         </div>
 
-        <div className="flex items-center justify-center">
+        <div className="flex items-center gap-2 flex-1 justify-end">
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1 bg-muted rounded-full text-xs text-muted-foreground">
+            <span className="text-[10px] font-bold uppercase tracking-widest">Dyslexia</span>
+            <Toggle checked={isDyslexiaMode} onChange={setDyslexiaMode} size="sm" />
+          </div>
           <div className="flex items-center gap-2 px-3 py-1 bg-muted rounded-full text-xs text-muted-foreground">
             {isEditMode ? <Edit3 size={14} /> : <Eye size={14} />}
             <Toggle checked={isEditMode} onChange={setEditMode} size="sm" />
             <span className="text-xs">{isEditMode ? 'Edit' : 'View'}</span>
           </div>
-        </div>
-
-        <div className="flex items-center gap-2 flex-1 justify-end">
           <Button
             variant="ghost"
             size="icon"
@@ -345,6 +355,7 @@ function WorkspaceEditor() {
               onNodesDelete={useWorkspaceStore.getState().onNodesDelete}
               onEdgesDelete={useWorkspaceStore.getState().onEdgesDelete}
               onNodeClick={handleNodeClick}
+              onEdgeClick={handleEdgeClick}
               onPaneClick={handlePaneClick}
               nodeTypes={nodeTypes}
               nodesDraggable={isEditMode && !isFlashcardOpen && activeTool === TOOLS.SELECT}
@@ -361,8 +372,6 @@ function WorkspaceEditor() {
               colorMode="light"
               minZoom={0.3}
               maxZoom={2}
-              translateExtent={[[0, 0], [A4_WIDTH, A4_HEIGHT]]}
-              nodeExtent={[[0, 0], [A4_WIDTH, A4_HEIGHT]]}
               proOptions={{ hideAttribution: true }}
             >
               <Background variant="dots" gap={20} size={1} color="#d4d8e0" />
