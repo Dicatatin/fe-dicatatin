@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Toggle from '@/components/ui/Toggle';
+import { PageLoader } from '@/components/ui/Loader';
 import useWorkspaceStore from '@/stores/useWorkspaceStore';
 import useUIStore from '@/stores/useUIStore';
 import useFlashcardStore from '@/stores/useFlashcardStore';
@@ -22,33 +23,10 @@ import useAuthStore from '@/stores/useAuthStore';
 import FlashcardPopup from '@/features/flashcard/FlashcardPopup';
 import DetailPanel from '@/features/workspace/panels/DetailPanel';
 import { nodeTypes } from '@/features/workspace/nodes';
-import { A4_WIDTH, A4_HEIGHT, TOOLS, METHODS } from '@/utils/constants';
-import { getMockDataByMethod } from '@/utils/mockData';
+import { A4_WIDTH, A4_HEIGHT, TOOLS } from '@/utils/constants';
 import { exportCanvasToPDF } from '@/utils/pdfExport';
 import useAutosave from '@/hooks/useAutosave';
 import useKeyboardShortcuts from '@/hooks/useKeyboardShortcuts';
-
-
-// Method mapping from workspace list mock
-const WORKSPACE_METHODS = {
-  '1': METHODS.MIND_MAP,
-  '2': METHODS.CORNELL,
-  '3': METHODS.FEYNMAN,
-  '4': METHODS.BOXING,
-  '5': METHODS.CHARTING,
-  '6': METHODS.ZETTELKASTEN,
-  '7': METHODS.SKETCHNOTING,
-};
-
-const WORKSPACE_NAMES = {
-  '1': 'Biologi Sel - Mitosis & Meiosis',
-  '2': 'Fotosintesis - Cornell Notes',
-  '3': 'Hukum Newton - Feynman Method',
-  '4': 'Sistem Tubuh Manusia - Boxing',
-  '5': 'Mitosis vs Meiosis - Charting',
-  '6': 'Evolusi Darwin - Zettelkasten',
-  '7': 'Tata Surya - Sketchnoting',
-};
 
 function WorkspaceEditor() {
   const { id } = useParams();
@@ -56,8 +34,10 @@ function WorkspaceEditor() {
   const { screenToFlowPosition } = useReactFlow();
   const {
     nodes, edges, onNodesChange, onEdgesChange, onConnect,
-    loadGraph, workspaceName, setWorkspaceName,
+    workspaceName, setWorkspaceName,
     addNode, deleteNode, deleteEdge, undo, redo, historyPast, historyFuture,
+    fetchWorkspaceById, currentWorkspaceLoading, currentWorkspaceError,
+    currentWorkspace, flashcards, saveCurrentWorkspace,
   } = useWorkspaceStore();
   const {
     isEditMode, setEditMode, activeTool, setActiveTool,
@@ -68,26 +48,61 @@ function WorkspaceEditor() {
   const { isDyslexiaMode, setDyslexiaMode } = useAuthStore();
   const [isEditingName, setIsEditingName] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
-  const currentMethod = WORKSPACE_METHODS[id] || METHODS.MIND_MAP;
   const nameInputRef = useRef(null);
   const canvasRef = useRef(null);
 
-  // Load method-specific mock data
+  // Load workspace detail from backend and poll while AI has not produced graph data yet.
   useEffect(() => {
-    const mockData = getMockDataByMethod(currentMethod);
-    loadGraph(mockData.nodes, mockData.edges);
-    setCards(mockData.flashcards);
-    setWorkspaceName(WORKSPACE_NAMES[id] || 'Untitled Workspace');
-  }, [currentMethod, id, loadGraph, setCards, setWorkspaceName]);
+    if (!id) return undefined;
+
+    let isMounted = true;
+    let pollTimer = null;
+
+    const loadWorkspace = async ({ silent = false } = {}) => {
+      try {
+        if (silent) {
+          const state = useWorkspaceStore.getState();
+          const hasLocalContent = state.nodes.length > 0 || state.edges.length > 0 || state.flashcards.length > 0;
+          if (hasLocalContent) return;
+        }
+
+        const workspace = await fetchWorkspaceById(id, { silent });
+        const hasGeneratedContent = workspace.nodes.length > 0 || workspace.edges.length > 0 || workspace.flashcards.length > 0;
+
+        if (isMounted && !hasGeneratedContent) {
+          pollTimer = window.setTimeout(() => loadWorkspace({ silent: true }), 3000);
+        }
+      } catch {
+        if (pollTimer) window.clearTimeout(pollTimer);
+      }
+    };
+
+    loadWorkspace();
+
+    return () => {
+      isMounted = false;
+      if (pollTimer) window.clearTimeout(pollTimer);
+    };
+  }, [id, fetchWorkspaceById]);
+
+  useEffect(() => {
+    setCards(flashcards);
+  }, [flashcards, setCards]);
 
   // Autosave hook
   useAutosave(2000);
 
   // Save handler
-  const handleSave = useCallback(() => {
+  const handleSave = useCallback(async () => {
     setSaveStatus('saving');
-    setTimeout(() => setSaveStatus('saved'), 800);
-  }, [setSaveStatus]);
+    try {
+      await saveCurrentWorkspace();
+      setSaveStatus('saved');
+    } catch (error) {
+      console.error('Save failed:', error);
+      setSaveStatus('unsaved');
+    }
+  }, [saveCurrentWorkspace, setSaveStatus]);
 
   // Keyboard shortcuts
   useKeyboardShortcuts({ onSave: handleSave });
@@ -106,8 +121,7 @@ function WorkspaceEditor() {
   }, [workspaceName]);
 
   const handleFlashcard = () => {
-    const mockData = getMockDataByMethod(currentMethod);
-    setCards(mockData.flashcards);
+    setCards(flashcards);
     setFlashcardOpen(true);
     setEditMode(false);
   };
@@ -239,6 +253,25 @@ function WorkspaceEditor() {
     { key: TOOLS.DELETE, icon: <Trash2 size={18} />, label: 'Delete' },
   ];
 
+  const isAwaitingAI = currentWorkspace && nodes.length === 0 && edges.length === 0;
+
+  if (currentWorkspaceLoading) {
+    return <PageLoader />;
+  }
+
+  if (currentWorkspaceError) {
+    return (
+      <div className="flex h-screen flex-col items-center justify-center gap-4 bg-background p-6 text-center">
+        <h1 className="text-2xl font-bold">Workspace tidak bisa dimuat</h1>
+        <p className="max-w-md text-muted-foreground">{currentWorkspaceError}</p>
+        <div className="flex gap-3">
+          <Button variant="outline" onClick={() => navigate('/home')}>Kembali</Button>
+          <Button onClick={() => fetchWorkspaceById(id)}>Coba Lagi</Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="h-screen flex flex-col bg-background overflow-hidden">
       {/* Top Bar */}
@@ -346,6 +379,12 @@ function WorkspaceEditor() {
         {/* Canvas */}
         <div className="flex-1 flex items-center justify-center bg-background overflow-auto p-8">
           <div className="bg-white shadow-[0_8px_32px_rgba(0,0,0,0.4)] rounded-sm relative shrink-0 [&_.react-flow]:rounded-sm [&_.react-flow__background]:bg-white [&_.react-flow__minimap]:border [&_.react-flow__minimap]:border-border [&_.react-flow__minimap]:rounded-md [&_.react-flow__minimap]:overflow-hidden [&_.react-flow__controls]:rounded-md [&_.react-flow__controls]:border [&_.react-flow__controls]:border-border [&_.react-flow__controls]:overflow-hidden [&_.react-flow__controls]:shadow-md [&_.react-flow__controls_button]:bg-secondary [&_.react-flow__controls_button]:border-border [&_.react-flow__controls_button]:text-muted-foreground hover:[&_.react-flow__controls_button]:bg-muted hover:[&_.react-flow__controls_button]:text-foreground" ref={canvasRef} style={{ width: A4_WIDTH, height: A4_HEIGHT }}>
+            {isAwaitingAI && (
+              <div className="absolute left-1/2 top-8 z-20 w-[min(520px,calc(100%-32px))] -translate-x-1/2 rounded-lg border border-border bg-secondary/95 px-4 py-3 text-center shadow-lg">
+                <p className="text-sm font-semibold text-foreground">AI sedang memproses catatan ini.</p>
+                <p className="text-xs text-muted-foreground">Halaman akan mengecek hasil terbaru otomatis.</p>
+              </div>
+            )}
             <ReactFlow
               nodes={nodes}
               edges={edges}
@@ -376,12 +415,6 @@ function WorkspaceEditor() {
             >
               <Background variant="dots" gap={20} size={1} color="#d4d8e0" />
               <Controls position="bottom-left" showInteractive={false} />
-              <MiniMap
-                position="bottom-left"
-                style={{ marginBottom: 50 }}
-                nodeStrokeWidth={3}
-                maskColor="rgba(10, 22, 40, 0.7)"
-              />
             </ReactFlow>
           </div>
         </div>

@@ -1,43 +1,74 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, Grid, Search, Sparkles } from 'lucide-react';
+import { Camera, Grid, Search, Sparkles, Trash2 } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import { PipelineLoader } from '@/components/ui/Loader';
 import useWorkspaceStore from '@/stores/useWorkspaceStore';
+import { createWorkspace, getWorkspace, deleteWorkspace } from '@/services/workspaceService';
 import { METHOD_INFO } from '@/utils/constants';
 
 export default function HomePage() {
   const navigate = useNavigate();
-  const { workspaces, workspacesLoading, fetchWorkspaces } = useWorkspaceStore();
+  const { workspaces, workspacesLoading, workspacesError, fetchWorkspaces } = useWorkspaceStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMethod, setSelectedMethod] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [pipelineStage, setPipelineStage] = useState('scanning');
+  const [uploadError, setUploadError] = useState('');
 
   useEffect(() => {
     fetchWorkspaces();
   }, [fetchWorkspaces]);
 
   const filteredWorkspaces = workspaces.filter((w) =>
-    w.name.toLowerCase().includes(searchQuery.toLowerCase())
+    (w.name || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleStartProcessing = () => {
-    if (!selectedMethod) return;
+  const handleStartProcessing = async () => {
+    if (!selectedMethod || !uploadedFile) return;
     setIsProcessing(true);
     setPipelineStage('scanning');
+    setUploadError('');
 
-    // Simulate AI pipeline
-    setTimeout(() => setPipelineStage('sanitizing'), 2000);
-    setTimeout(() => setPipelineStage('visualizing'), 4000);
-    setTimeout(() => {
+    const sanitizingTimer = setTimeout(() => setPipelineStage('sanitizing'), 1200);
+    const visualizingTimer = setTimeout(() => setPipelineStage('visualizing'), 2400);
+
+    try {
+      const workspace = await createWorkspace({
+        file: uploadedFile,
+        method: selectedMethod,
+        name: uploadedFile.name.replace(/\.[^/.]+$/, '') || 'Untitled Note',
+      });
+
+      let isReady = false;
+      let attempt = 0;
+      while (!isReady && attempt < 40) {
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        try {
+          const updatedWorkspace = await getWorkspace(workspace.id);
+          const hasContent = updatedWorkspace.nodes?.length > 0 || updatedWorkspace.edges?.length > 0 || updatedWorkspace.flashcards?.length > 0;
+          if (hasContent) {
+            isReady = true;
+          }
+        } catch (e) {
+          // ignore getWorkspace error during polling
+        }
+        attempt++;
+      }
+
+      navigate(`/workspace/${workspace.id}`);
+    } catch (error) {
+      console.error('Failed to create workspace:', error);
+      setUploadError(error.response?.data?.message || 'Gagal mengupload catatan. Coba lagi.');
       setIsProcessing(false);
-      navigate('/workspace/new');
-    }, 6000);
+    } finally {
+      clearTimeout(sanitizingTimer);
+      clearTimeout(visualizingTimer);
+    }
   };
 
   const formatDate = (dateStr) => {
@@ -116,13 +147,18 @@ export default function HomePage() {
                         className={`flex flex-col items-center gap-2 p-3 border rounded-xl cursor-pointer transition-all hover:bg-muted ${selectedMethod === key ? 'border-primary bg-primary/10 ring-1 ring-primary' : 'border-border'}`}
                         onClick={() => setSelectedMethod(key)}
                       >
-                        <span className="flex h-9 w-9 items-center justify-center rounded-md bg-secondary text-xs font-black" style={{ color: info.color }}>{info.icon}</span>
-                        <span className="text-[10px] font-bold uppercase tracking-tight text-center leading-tight">{info.label}</span>
+                        <span className="text-[10px] font-bold uppercase tracking-tight text-center leading-tight mb-1" style={{ color: info.color }}>{info.label}</span>
+                        <span className="text-[9px] font-medium text-center text-muted-foreground leading-tight">{info.description}</span>
                       </div>
                     ))}
                   </div>
                   
                   <div className="mt-8 flex justify-end">
+                    {uploadError && (
+                      <p className="mr-auto self-center text-sm font-medium text-destructive">
+                        {uploadError}
+                      </p>
+                    )}
                     <Button
                       disabled={!selectedMethod || !uploadedFile}
                       onClick={handleStartProcessing}
@@ -161,7 +197,13 @@ export default function HomePage() {
           </div>
 
           {/* Grid */}
-          {workspacesLoading ? (
+          {workspacesError ? (
+            <div className="text-center py-16 px-8 flex flex-col items-center gap-4">
+              <h3 className="text-xl font-bold">Gagal memuat library</h3>
+              <p className="text-muted-foreground max-w-md">{workspacesError}</p>
+              <Button variant="outline" onClick={fetchWorkspaces}>Coba Lagi</Button>
+            </div>
+          ) : workspacesLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {[1, 2, 3, 4].map((i) => (
                 <Card key={i} className="h-[220px] animate-pulse bg-muted/50 border-none" />
@@ -180,9 +222,28 @@ export default function HomePage() {
               {filteredWorkspaces.map((ws) => (
                 <Card
                   key={ws.id}
-                  className="group overflow-hidden cursor-pointer border-border hover:border-primary hover:shadow-xl hover:shadow-primary/5 transition-all duration-300"
+                  className="group overflow-hidden cursor-pointer border-border hover:border-primary hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 relative"
                   onClick={() => navigate(`/workspace/${ws.id}`)}
                 >
+                  <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      className="p-1.5 bg-background/80 hover:bg-destructive hover:text-destructive-foreground text-muted-foreground rounded-md backdrop-blur-sm transition-colors shadow-sm"
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        if (window.confirm('Hapus workspace ini?')) {
+                          try {
+                            await deleteWorkspace(ws.id);
+                          } catch (err) {
+                            console.error('Failed to delete workspace', err);
+                          } finally {
+                            fetchWorkspaces();
+                          }
+                        }
+                      }}
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
                   <div className="h-[140px] bg-gradient-to-br from-secondary/50 to-muted/30 flex items-center justify-center relative overflow-hidden">
                     <div className="flex h-16 w-16 items-center justify-center rounded-lg border border-border bg-background/70 text-xl font-black opacity-60 group-hover:scale-125 transition-transform duration-500">
                       {METHOD_INFO[ws.method]?.icon || 'DC'}
@@ -190,7 +251,10 @@ export default function HomePage() {
                     <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
                   <div className="p-4 px-5">
-                    <h3 className="text-base font-bold mb-2 truncate group-hover:text-primary transition-colors">{ws.name}</h3>
+                    <h3 className="text-base font-bold mb-1 truncate group-hover:text-primary transition-colors">{ws.name}</h3>
+                    <p className="text-[10px] text-muted-foreground mb-3 line-clamp-2 leading-relaxed">
+                      {ws.nodes?.slice(0, 3).map(n => n.data?.label).filter(Boolean).join(' ').substring(0, 80) + (ws.nodes?.length > 0 ? '...' : 'Belum ada catatan')}
+                    </p>
                     <div className="flex items-center justify-between">
                       <Badge method={ws.method} />
                       <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">{formatDate(ws.updatedAt)}</span>
@@ -205,4 +269,3 @@ export default function HomePage() {
     </div>
   );
 }
-

@@ -34,21 +34,7 @@ export default function HeroSection() {
               </Button>
             </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto lg:mx-0 border-t border-border pt-10">
-              <div className="rounded-lg border border-border bg-secondary/30 px-5 py-4 text-center">
-                <span className="text-3xl font-bold">&lt;30s</span>
-                <span className="block text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Transformasi</span>
-              </div>
-              <div className="rounded-lg border border-border bg-secondary/30 px-5 py-4 text-center">
-                <span className="text-3xl font-bold">90%</span>
-                <span className="block text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Akurasi OCR</span>
-              </div>
-              <div className="rounded-lg border border-border bg-secondary/30 px-5 py-4 text-center">
-                <span className="text-3xl font-bold">6+</span>
-                <span className="block text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Metode Belajar</span>
-              </div>
-            </div>
+            {/* Stats removed as requested */}
           </div>
 
           {/* Visual preview */}
