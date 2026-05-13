@@ -4,6 +4,11 @@ import {
   applyEdgeChanges,
   addEdge,
 } from '@xyflow/react';
+import {
+  getWorkspace,
+  getWorkspaces,
+  updateWorkspace,
+} from '@/services/workspaceService';
 
 const cloneGraph = ({ nodes, edges }) => ({
   nodes: JSON.parse(JSON.stringify(nodes)),
@@ -19,11 +24,14 @@ const useWorkspaceStore = create((set, get) => ({
   // Workspace list (home page)
   workspaces: [],
   workspacesLoading: false,
+  workspacesError: '',
 
   // Current workspace
   currentWorkspace: null,
   workspaceName: 'Untitled',
   method: null,
+  currentWorkspaceLoading: false,
+  currentWorkspaceError: '',
 
   // React Flow state
   nodes: [],
@@ -40,72 +48,16 @@ const useWorkspaceStore = create((set, get) => ({
   setWorkspacesLoading: (loading) => set({ workspacesLoading: loading }),
 
   fetchWorkspaces: async () => {
-    set({ workspacesLoading: true });
+    set({ workspacesLoading: true, workspacesError: '' });
     try {
-      // TODO: Replace with actual API call
-      // Mock data for development
-      const mockWorkspaces = [
-        {
-          id: '1',
-          name: 'Biologi Sel - Mitosis & Meiosis',
-          method: 'mind_map',
-          createdAt: '2026-05-01T10:00:00Z',
-          updatedAt: '2026-05-04T15:30:00Z',
-          thumbnail: null,
-        },
-        {
-          id: '2',
-          name: 'Fotosintesis - Cornell Notes',
-          method: 'cornell',
-          createdAt: '2026-04-28T09:00:00Z',
-          updatedAt: '2026-05-03T12:00:00Z',
-          thumbnail: null,
-        },
-        {
-          id: '3',
-          name: 'Hukum Newton - Feynman Method',
-          method: 'feynman',
-          createdAt: '2026-04-25T14:00:00Z',
-          updatedAt: '2026-05-02T18:00:00Z',
-          thumbnail: null,
-        },
-        {
-          id: '4',
-          name: 'Sistem Tubuh Manusia - Boxing',
-          method: 'boxing',
-          createdAt: '2026-04-22T11:00:00Z',
-          updatedAt: '2026-05-01T09:00:00Z',
-          thumbnail: null,
-        },
-        {
-          id: '5',
-          name: 'Mitosis vs Meiosis - Charting',
-          method: 'charting',
-          createdAt: '2026-04-20T08:00:00Z',
-          updatedAt: '2026-04-30T14:00:00Z',
-          thumbnail: null,
-        },
-        {
-          id: '6',
-          name: 'Evolusi Darwin - Zettelkasten',
-          method: 'zettelkasten',
-          createdAt: '2026-04-18T13:00:00Z',
-          updatedAt: '2026-04-28T16:00:00Z',
-          thumbnail: null,
-        },
-        {
-          id: '7',
-          name: 'Tata Surya - Sketchnoting',
-          method: 'sketchnoting',
-          createdAt: '2026-04-15T10:00:00Z',
-          updatedAt: '2026-04-25T11:00:00Z',
-          thumbnail: null,
-        },
-      ];
-      set({ workspaces: mockWorkspaces, workspacesLoading: false });
+      const workspaces = await getWorkspaces();
+      set({ workspaces, workspacesLoading: false });
     } catch (error) {
       console.error('Failed to fetch workspaces:', error);
-      set({ workspacesLoading: false });
+      set({
+        workspacesLoading: false,
+        workspacesError: error.response?.data?.message || 'Gagal mengambil data workspace.',
+      });
     }
   },
 
@@ -121,6 +73,26 @@ const useWorkspaceStore = create((set, get) => ({
     historyFuture: [],
     dragStartSnapshot: null,
   }),
+
+  fetchWorkspaceById: async (id, { silent = false } = {}) => {
+    if (!silent) {
+      set({ currentWorkspaceLoading: true, currentWorkspaceError: '' });
+    }
+
+    try {
+      const workspace = await getWorkspace(id);
+      get().setCurrentWorkspace(workspace);
+      set({ currentWorkspaceLoading: false, currentWorkspaceError: '' });
+      return workspace;
+    } catch (error) {
+      console.error('Failed to fetch workspace:', error);
+      set({
+        currentWorkspaceLoading: false,
+        currentWorkspaceError: error.response?.data?.message || 'Gagal mengambil detail workspace.',
+      });
+      throw error;
+    }
+  },
 
   setWorkspaceName: (name) => set({ workspaceName: name }),
   setMethod: (method) => set({ method }),
@@ -339,6 +311,27 @@ const useWorkspaceStore = create((set, get) => ({
   // --- Flashcard actions ---
   setFlashcards: (flashcards) => set({ flashcards }),
 
+  saveCurrentWorkspace: async () => {
+    const data = get().getWorkspaceData();
+    if (!data.id || data.id === 'new') return null;
+
+    const payload = {
+      name: data.name,
+      method: data.method,
+      nodes: data.nodes,
+      edges: data.edges,
+      flashcards: data.flashcards,
+    };
+
+    const result = await updateWorkspace(data.id, payload);
+    set((state) => ({
+      currentWorkspace: state.currentWorkspace
+        ? { ...state.currentWorkspace, ...payload, updatedAt: result?.updatedAt || state.currentWorkspace.updatedAt }
+        : state.currentWorkspace,
+    }));
+    return result;
+  },
+
   // --- Save ---
   getWorkspaceData: () => {
     const { currentWorkspace, workspaceName, method, nodes, edges, flashcards } = get();
@@ -357,6 +350,8 @@ const useWorkspaceStore = create((set, get) => ({
     currentWorkspace: null,
     workspaceName: 'Untitled',
     method: null,
+    currentWorkspaceLoading: false,
+    currentWorkspaceError: '',
     nodes: [],
     edges: [],
     flashcards: [],

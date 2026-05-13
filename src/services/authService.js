@@ -1,110 +1,93 @@
-import { createClient } from '@supabase/supabase-js';
+import api from '@/services/api';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const TOKEN_KEY = 'dicatatin-token';
+const USER_KEY = 'dicatatin-user';
 
-// Initialize Supabase client (will be null if env vars not properly set)
-const isValidUrl = (url) => {
-  try {
-    new URL(url);
-    return true;
-  } catch {
-    return false;
-  }
+const normalizeUser = (user) => {
+  if (!user) return null;
+
+  return {
+    ...user,
+    user_metadata: {
+      full_name: user.name || user.user_metadata?.full_name || user.email,
+      avatar_url: user.user_metadata?.avatar_url || null,
+    },
+  };
 };
 
-export const supabase = supabaseUrl && supabaseAnonKey && isValidUrl(supabaseUrl)
-  ? createClient(supabaseUrl, supabaseAnonKey)
-  : null;
+const persistAuth = ({ token, user }) => {
+  const normalizedUser = normalizeUser(user);
+  localStorage.setItem(TOKEN_KEY, token);
+  localStorage.setItem(USER_KEY, JSON.stringify(normalizedUser));
+
+  return {
+    user: normalizedUser,
+    session: { access_token: token, user: normalizedUser },
+  };
+};
 
 /**
- * Sign in with Google OAuth via Supabase
+ * Sign in with Google OAuth.
  */
 export async function signInWithGoogle() {
-  if (!supabase) {
-    console.warn('Supabase not configured. Using mock auth.');
-    return mockAuth();
-  }
-
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      redirectTo: `${window.location.origin}/auth/callback`,
-    },
-  });
-
-  if (error) throw error;
-  return data;
+  throw new Error('Login Google belum tersedia di backend Dicatat.in.');
 }
 
 /**
  * Sign in with email/password
  */
 export async function signInWithEmail(email, password) {
-  if (!supabase) {
-    console.warn('Supabase not configured. Using mock auth.');
-    return mockAuth(email);
-  }
-
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
-
-  if (error) throw error;
-  return data;
+  const response = await api.post('/auth/login', { email, password });
+  return persistAuth(response.data.data);
 }
 
 /**
  * Sign up with email/password
  */
 export async function signUp(email, password, fullName) {
-  if (!supabase) {
-    console.warn('Supabase not configured. Using mock auth.');
-    return mockAuth(email, fullName);
-  }
-
-  const { data, error } = await supabase.auth.signUp({
+  const response = await api.post('/auth/register', {
+    name: fullName,
     email,
     password,
-    options: {
-      data: { full_name: fullName },
-    },
+    password_confirmation: password,
   });
-
-  if (error) throw error;
-  return data;
+  return persistAuth(response.data.data);
 }
 
 /**
  * Sign out
  */
 export async function signOutUser() {
-  if (supabase) {
-    await supabase.auth.signOut();
+  const token = localStorage.getItem(TOKEN_KEY);
+
+  if (token) {
+    try {
+      await api.post('/auth/logout');
+    } catch (error) {
+      console.warn('Logout request failed:', error);
+    }
   }
-  localStorage.removeItem('dicatatin-token');
-  localStorage.removeItem('dicatatin-user');
+
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(USER_KEY);
 }
 
 /**
  * Get current session
  */
 export async function getSession() {
-  if (!supabase) {
-    const mockUser = localStorage.getItem('dicatatin-user');
-    if (mockUser) {
-      return { user: JSON.parse(mockUser), session: { access_token: 'mock-token' } };
-    }
+  const token = localStorage.getItem(TOKEN_KEY);
+  const storedUser = localStorage.getItem(USER_KEY);
+
+  if (!token || !storedUser) {
     return { user: null, session: null };
   }
 
-  const { data: { session }, error } = await supabase.auth.getSession();
-  if (error) throw error;
+  const user = normalizeUser(JSON.parse(storedUser));
 
   return {
-    user: session?.user || null,
-    session: session || null,
+    user,
+    session: { access_token: token, user },
   };
 }
 
@@ -112,26 +95,18 @@ export async function getSession() {
  * Listen for auth state changes
  */
 export function onAuthStateChange(callback) {
-  if (!supabase) return { data: { subscription: { unsubscribe: () => {} } } };
-
-  return supabase.auth.onAuthStateChange((event, session) => {
-    callback(event, session);
-  });
-}
-
-/**
- * Mock auth for development without Supabase
- */
-function mockAuth(email = 'demo@dicatatin.com', fullName = 'Demo User') {
-  const mockUser = {
-    id: 'mock-user-id',
-    email,
-    user_metadata: { full_name: fullName, avatar_url: null },
+  const handleStorage = (event) => {
+    if (![TOKEN_KEY, USER_KEY].includes(event.key)) return;
+    getSession().then(({ session }) => callback('TOKEN_CHANGED', session));
   };
-  const mockSession = { access_token: 'mock-token', user: mockUser };
 
-  localStorage.setItem('dicatatin-user', JSON.stringify(mockUser));
-  localStorage.setItem('dicatatin-token', 'mock-token');
+  window.addEventListener('storage', handleStorage);
 
-  return { user: mockUser, session: mockSession };
+  return {
+    data: {
+      subscription: {
+        unsubscribe: () => window.removeEventListener('storage', handleStorage),
+      },
+    },
+  };
 }

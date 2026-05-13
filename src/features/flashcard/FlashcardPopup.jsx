@@ -53,15 +53,14 @@ export default function FlashcardPopup() {
           >
             <div className={`relative w-full h-full transition-transform duration-700 preserve-3d ${isFlipped ? 'rotate-y-180' : ''}`}>
               {/* Front */}
-              <div className="absolute inset-0 backface-hidden flex flex-col items-center justify-center p-10 bg-secondary/50 border-2 border-border rounded-[2rem] text-center group-hover:border-primary/30 transition-colors">
+              <div className={`absolute inset-0 backface-hidden flex flex-col items-center justify-center p-10 bg-secondary/50 border-2 border-border rounded-[2rem] text-center group-hover:border-primary/30 transition-all duration-300 ${isFlipped ? 'opacity-0 z-0' : 'opacity-100 z-10'}`}>
                 <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-6">Pertanyaan</span>
                 <p className="text-xl md:text-2xl font-bold leading-relaxed">{card.question}</p>
                 <span className="mt-10 text-[10px] text-muted-foreground italic font-medium opacity-50 group-hover:opacity-100 transition-opacity">Klik untuk melihat jawaban</span>
               </div>
               
               {/* Back */}
-              <div className="absolute inset-0 backface-hidden rotate-y-180 flex flex-col items-center justify-center p-10 bg-primary/5 border-2 border-primary/30 rounded-[2rem] text-center">
-                <span className="text-[10px] font-black uppercase tracking-widest text-primary mb-6">Jawaban</span>
+              <div className={`absolute inset-0 backface-hidden rotate-y-180 flex flex-col items-center justify-center p-10 bg-primary/5 border-2 border-primary/30 rounded-[2rem] text-center transition-all duration-300 ${isFlipped ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}>
                 <p className="text-xl md:text-2xl font-bold leading-relaxed text-foreground">{card.answer}</p>
               </div>
             </div>
