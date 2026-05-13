@@ -5,6 +5,7 @@ import Navbar from '@/components/layout/Navbar';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
+import Modal from '@/components/ui/Modal';
 import { PipelineLoader } from '@/components/ui/Loader';
 import useWorkspaceStore from '@/stores/useWorkspaceStore';
 import { createWorkspace, getWorkspace, deleteWorkspace } from '@/services/workspaceService';
@@ -19,6 +20,8 @@ export default function HomePage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [pipelineStage, setPipelineStage] = useState('scanning');
   const [uploadError, setUploadError] = useState('');
+  const [deletingWorkspaceId, setDeletingWorkspaceId] = useState(null);
+  const [confirmDeleteWorkspace, setConfirmDeleteWorkspace] = useState(null);
 
   useEffect(() => {
     fetchWorkspaces();
@@ -75,6 +78,25 @@ export default function HomePage() {
     return new Date(dateStr).toLocaleDateString('id-ID', {
       day: 'numeric', month: 'short', year: 'numeric'
     });
+  };
+
+  const handleDeleteWorkspace = async (workspaceId) => {
+    if (!workspaceId) return;
+    setConfirmDeleteWorkspace(workspaceId);
+  };
+
+  const confirmDelete = async () => {
+    if (!confirmDeleteWorkspace) return;
+    setDeletingWorkspaceId(confirmDeleteWorkspace);
+    setConfirmDeleteWorkspace(null);
+    try {
+      await deleteWorkspace(confirmDeleteWorkspace);
+      await fetchWorkspaces();
+    } catch (err) {
+      console.error('Failed to delete workspace', err);
+    } finally {
+      setDeletingWorkspaceId(null);
+    }
   };
 
   return (
@@ -228,17 +250,10 @@ export default function HomePage() {
                   <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
                       className="p-1.5 bg-background/80 hover:bg-destructive hover:text-destructive-foreground text-muted-foreground rounded-md backdrop-blur-sm transition-colors shadow-sm"
-                      onClick={async (e) => {
+                      disabled={deletingWorkspaceId === ws.id}
+                      onClick={(e) => {
                         e.stopPropagation();
-                        if (window.confirm('Hapus workspace ini?')) {
-                          try {
-                            await deleteWorkspace(ws.id);
-                          } catch (err) {
-                            console.error('Failed to delete workspace', err);
-                          } finally {
-                            fetchWorkspaces();
-                          }
-                        }
+                        handleDeleteWorkspace(ws.id);
                       }}
                     >
                       <Trash2 size={14} />
@@ -266,6 +281,31 @@ export default function HomePage() {
           )}
         </div>
       </main>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={!!confirmDeleteWorkspace}
+        onClose={() => setConfirmDeleteWorkspace(null)}
+        className="max-w-md border-destructive/20"
+      >
+        <div className="flex flex-col items-center text-center pt-4">
+          <div className="w-12 h-12 rounded-full bg-destructive/10 text-destructive flex items-center justify-center mb-4">
+            <Trash2 size={24} />
+          </div>
+          <h3 className="text-xl font-bold mb-2">Hapus Workspace</h3>
+          <p className="text-muted-foreground mb-6">
+            Apakah Anda yakin ingin menghapus workspace ini? Semua catatan di dalamnya akan hilang permanen.
+          </p>
+          <div className="flex w-full gap-3">
+            <Button className="flex-1" variant="outline" onClick={() => setConfirmDeleteWorkspace(null)}>
+              Batal
+            </Button>
+            <Button className="flex-1" variant="destructive" onClick={confirmDelete}>
+              Ya, Hapus
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

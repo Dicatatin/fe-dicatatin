@@ -95,10 +95,9 @@ export default function LoginPage() {
               />
             </div>
 
-            {error && <p className="text-destructive text-sm font-medium">{error}</p>}
-
+            {error && <p className="text-destructive text-sm font-medium text-center bg-destructive/10 p-2 rounded-md">{error}</p>}
             <Button type="submit" className="w-full mt-2" disabled={loading}>
-              {loading ? 'Memuat...' : 'Masuk'}
+              {loading ? 'Masuk...' : 'Masuk'}
             </Button>
           </form>
 

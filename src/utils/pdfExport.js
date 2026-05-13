@@ -1,10 +1,10 @@
-import html2canvas from 'html2canvas';
+import { toPng } from 'html-to-image';
 import jsPDF from 'jspdf';
 import { A4_WIDTH_MM, A4_HEIGHT_MM } from './constants';
 
 /**
  * Capture the A4 canvas area and export as PDF.
- * Uses html2canvas for raster capture, then jsPDF for PDF creation.
+ * Uses html-to-image for raster capture, then jsPDF for PDF creation.
  */
 export async function exportCanvasToPDF(canvasElement, filename = 'dicatatin-export') {
   if (!canvasElement) {
@@ -12,14 +12,18 @@ export async function exportCanvasToPDF(canvasElement, filename = 'dicatatin-exp
   }
 
   // Capture the canvas area as a high-res image
-  const canvas = await html2canvas(canvasElement, {
-    scale: 2, // 2x for quality
-    useCORS: true,
+  const imgData = await toPng(canvasElement, {
+    pixelRatio: 2, // 2x for quality
     backgroundColor: '#FFFFFF',
-    logging: false,
+    filter: (node) => {
+      // Exclude minimap or controls if they are inside
+      if (node?.classList?.contains('react-flow__minimap') || node?.classList?.contains('react-flow__controls')) {
+        return false;
+      }
+      return true;
+    }
   });
 
-  const imgData = canvas.toDataURL('image/png');
   const pdf = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
