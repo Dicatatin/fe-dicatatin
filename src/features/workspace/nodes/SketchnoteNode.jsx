@@ -34,12 +34,18 @@ export default function SketchnoteNode(props) {
       minHeight={importance === 'large' ? 60 : 36}
       handlePositions={['top', 'bottom', 'left', 'right']}
     >
-      <div className="sketchnote-node__icon" style={{ color: iconColor || '#6366F1' }}>
-        <IconComponent size={iconSize} />
-      </div>
-      <div className="sketchnote-node__text">
-        <span className="base-node__label">{props.data?.label || 'Note'}</span>
-      </div>
+      {({ isEditing, editor }) => (
+        <>
+          <div className="sketchnote-node__icon" style={{ color: iconColor || '#6366F1' }}>
+            <IconComponent size={iconSize} />
+          </div>
+          <div className="sketchnote-node__text">
+            {isEditing ? editor : (
+              <span className="base-node__label">{props.data?.label || 'Note'}</span>
+            )}
+          </div>
+        </>
+      )}
     </BaseNode>
   );
 }

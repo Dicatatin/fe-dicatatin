@@ -131,7 +131,26 @@ export default function BaseNode({
       ))}
 
       {/* Content */}
-      {children || (
+      {/* Content */}
+      {typeof children === 'function' ? (
+        children({
+          isEditing,
+          editor: (
+            <textarea
+              ref={textareaRef}
+              className="base-node__editor"
+              value={editValue}
+              onChange={(e) => setEditValue(e.target.value)}
+              onBlur={handleBlur}
+              onKeyDown={handleKeyDown}
+              rows={Math.max(1, editValue.split('\n').length)}
+              style={{ width: '100%', height: '100%', resize: 'none', background: 'transparent', border: 'none', outline: 'none' }}
+            />
+          )
+        })
+      ) : children ? (
+        children
+      ) : (
         <div className="base-node__content">
           {isEditing ? (
             <textarea

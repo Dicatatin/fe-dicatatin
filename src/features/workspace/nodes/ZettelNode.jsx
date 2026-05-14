@@ -14,14 +14,18 @@ export default function ZettelNode(props) {
       minHeight={50}
       handlePositions={['top', 'bottom', 'left', 'right']}
     >
-      <div className="base-node__content" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
-        {zettelId && <span className="zettel-node__id">{zettelId}</span>}
-        <div className="zettel-node__content">
-          <span className="base-node__label">
-            {props.data?.label || 'Note'}
-          </span>
+      {({ isEditing, editor }) => (
+        <div className="base-node__content" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+          {zettelId && <span className="zettel-node__id">{zettelId}</span>}
+          <div className="zettel-node__content">
+            {isEditing ? editor : (
+              <span className="base-node__label">
+                {props.data?.label || 'Note'}
+              </span>
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </BaseNode>
   );
 }
