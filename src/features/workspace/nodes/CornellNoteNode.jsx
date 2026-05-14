@@ -12,11 +12,15 @@ export default function CornellNoteNode(props) {
       minHeight={60}
       handlePositions={['left']}
     >
-      <div className="base-node__content">
-        <span className="base-node__label" style={{ width: '100%', whiteSpace: 'pre-wrap' }}>
-          {props.data?.label || 'Detail notes...'}
-        </span>
-      </div>
+      {({ isEditing, editor }) => (
+        <div className="base-node__content">
+          {isEditing ? editor : (
+            <span className="base-node__label" style={{ width: '100%', whiteSpace: 'pre-wrap' }}>
+              {props.data?.label || 'Detail notes...'}
+            </span>
+          )}
+        </div>
+      )}
     </BaseNode>
   );
 }

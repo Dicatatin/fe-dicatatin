@@ -12,12 +12,16 @@ export default function FeynmanRefinementNode(props) {
       minHeight={50}
       handlePositions={['left', 'right']}
     >
-      <div className="base-node__content" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
-        <div className="feynman-refinement-node__label">Refinement</div>
-        <span className="base-node__label">
-          {props.data?.label || 'Study more...'}
-        </span>
-      </div>
+      {({ isEditing, editor }) => (
+        <div className="base-node__content" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+          <div className="feynman-refinement-node__label">Refinement</div>
+          {isEditing ? editor : (
+            <span className="base-node__label">
+              {props.data?.label || 'Study more...'}
+            </span>
+          )}
+        </div>
+      )}
     </BaseNode>
   );
 }
