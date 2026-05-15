@@ -6,6 +6,7 @@ import Input from '@/components/ui/Input';
 import Toggle from '@/components/ui/Toggle';
 import useAuthStore from '@/stores/useAuthStore';
 import { signInWithEmail } from '@/services/authService';
+import mainLogo from '@/assets/main-logo.png';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -42,8 +43,8 @@ export default function LoginPage() {
     <div className="flex min-h-screen bg-background">
       <div className="hidden md:flex flex-1 bg-secondary p-12 flex-col justify-between items-center text-center">
         <div className="flex flex-col max-w-md items-center justify-center h-full">
-          <Link to="/" className="text-3xl font-bold mb-8 block tracking-tight">
-            DICATAT<span className="text-primary">.IN</span>
+          <Link to="/" className="mb-8 block">
+            <img src={mainLogo} alt="DICATAT.IN Logo" className="h-12 w-auto mx-auto" />
           </Link>
           <h2 className="text-4xl font-bold text-foreground mb-4 leading-tight">Catatan berantakan?<br />Biar AI yang urus.</h2>
           <p className="text-lg text-muted-foreground mb-12">

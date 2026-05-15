@@ -22,12 +22,16 @@ export default function FeynmanStepNode(props) {
       minHeight={60}
       handlePositions={['top', 'bottom', 'left', 'right']}
     >
-      <div className="base-node__content" style={{ flexDirection: 'column', alignItems: 'flex-start', paddingTop: 6 }}>
-        <div className="feynman-step-node__badge">{config.badgeLabel}</div>
-        <span className="base-node__label" style={{ marginTop: 4 }}>
-          {props.data?.label || 'Content...'}
-        </span>
-      </div>
+      {({ isEditing, editor }) => (
+        <div className="base-node__content" style={{ flexDirection: 'column', alignItems: 'flex-start', paddingTop: 6 }}>
+          <div className="feynman-step-node__badge">{config.badgeLabel}</div>
+          {isEditing ? editor : (
+            <span className="base-node__label" style={{ marginTop: 4 }}>
+              {props.data?.label || 'Content...'}
+            </span>
+          )}
+        </div>
+      )}
     </BaseNode>
   );
 }

@@ -1,31 +1,33 @@
-import { Handle, Position } from '@xyflow/react';
-
+import BaseNode from './BaseNode';
 
 const COLORS = ['teal', 'blue', 'purple', 'amber', 'pink'];
 
 /**
  * Boxing Group Node — parent container with pastel dashed border
  */
-export default function BoxingGroupNode({ data, selected, style = {} }) {
+export default function BoxingGroupNode(props) {
+  const { data } = props;
   const colorVariant = data?.colorIndex != null
     ? COLORS[data.colorIndex % COLORS.length]
     : COLORS[0];
 
   return (
-    <div
-      className={`base-node boxing-group-node boxing-group--${colorVariant} ${selected ? 'base-node--selected' : ''}`}
+    <BaseNode
+      {...props}
+      className={`boxing-group-node boxing-group--${colorVariant}`}
+      minWidth={300}
+      minHeight={200}
+      handlePositions={['top', 'bottom']}
       style={{
         width: data?.width || 300,
         height: data?.height || 200,
-        ...data?.style,
-        ...style,
       }}
     >
-      <div className="boxing-group-node__header">
-        {data?.label || 'Group'}
-      </div>
-      <Handle type="target" position={Position.Top} className="base-node__handle" />
-      <Handle type="source" position={Position.Bottom} className="base-node__handle" />
-    </div>
+      {({ isEditing, editor }) => (
+        <div className="boxing-group-node__header">
+          {isEditing ? editor : (data?.label || 'Group')}
+        </div>
+      )}
+    </BaseNode>
   );
 }

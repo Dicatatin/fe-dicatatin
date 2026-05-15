@@ -9,7 +9,7 @@ export default function HeroSection() {
     <section className="relative py-20 md:py-32 overflow-hidden" id="hero">
       {/* Background effects */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-primary/20 blur-[120px] rounded-full pointer-events-none -z-10" />
-      
+
       <div className="container mx-auto px-4">
         <div className="flex flex-col lg:flex-row items-center gap-16">
           <div className="flex-1 text-center lg:text-left">
@@ -20,8 +20,8 @@ export default function HeroSection() {
             </h1>
 
             <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-              Platform AI yang memahami tulisan tangan bahasa Indonesia — bukan sekadar OCR biasa. 
-              Pilih dari 6 metode belajar dan transformasi catatan Anda menjadi alat belajar aktif.
+              Platform AI yang memahami tulisan tanganmu.
+              Pilih dari 7 metode belajar dan transformasi catatan Anda menjadi alat belajar aktif.
             </p>
 
             <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-5 mb-16">
@@ -71,7 +71,7 @@ export default function HeroSection() {
                   <div className="absolute top-0 right-4 bg-secondary border border-border text-[9px] font-bold px-2 py-1 rounded-lg shadow-sm">Meiosis</div>
                   <div className="absolute bottom-4 left-0 bg-secondary border border-border text-[9px] font-bold px-2 py-1 rounded-lg shadow-sm">Organel</div>
                   <div className="absolute bottom-0 right-8 bg-secondary border border-border text-[9px] font-bold px-2 py-1 rounded-lg shadow-sm">Membran</div>
-                  
+
                   <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20" viewBox="0 0 240 160">
                     <line x1="120" y1="80" x2="60" y2="30" stroke="currentColor" strokeWidth="2" />
                     <line x1="120" y1="80" x2="180" y2="30" stroke="currentColor" strokeWidth="2" />

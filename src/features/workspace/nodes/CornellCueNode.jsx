@@ -12,11 +12,15 @@ export default function CornellCueNode(props) {
       minHeight={40}
       handlePositions={['right']}
     >
-      <div className="base-node__content">
-        <span className="base-node__label" style={{ width: '100%' }}>
-          {props.data?.label || 'Keyword'}
-        </span>
-      </div>
+      {({ isEditing, editor }) => (
+        <div className="base-node__content">
+          {isEditing ? editor : (
+            <span className="base-node__label" style={{ width: '100%' }}>
+              {props.data?.label || 'Keyword'}
+            </span>
+          )}
+        </div>
+      )}
     </BaseNode>
   );
 }
