@@ -110,6 +110,10 @@ export default function BaseNode({
         />
       )}
 
+      {/* Fallback explicit handles for AI generated edges that lack handle context */}
+      <Handle type="source" position={Position.Bottom} id="fallback-source" style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)', opacity: 0, pointerEvents: 'none', zIndex: -1 }} />
+      <Handle type="target" position={Position.Top} id="fallback-target" style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)', opacity: 0, pointerEvents: 'none', zIndex: -1 }} />
+
       {/* Handles */}
       {showHandles && handlePositions.map((pos) => (
         <Handle

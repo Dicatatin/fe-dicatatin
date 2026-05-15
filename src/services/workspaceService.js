@@ -61,3 +61,8 @@ export async function transformWorkspace(id, newMethod) {
 
   return unwrapData(response);
 }
+
+export async function regenerateFlashcards(id) {
+  const response = await api.post(`/workspaces/${id}/flashcards`);
+  return unwrapData(response);
+}
