@@ -12,6 +12,7 @@ export default function Navbar({ showAuth = true }) {
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
   const { user, isDyslexiaMode, setDyslexiaMode, signOut } = useAuthStore();
+  const isAdmin = user && (user.role === 'admin' || (user.email && user.email.includes('admin')));
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -47,7 +48,7 @@ export default function Navbar({ showAuth = true }) {
     <nav className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-md">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         {/* Brand */}
-        <Link to={user ? '/home' : '/'} className="flex items-center gap-3 group">
+        <Link to={user ? (isAdmin ? '/cms' : '/home') : '/'} className="flex items-center gap-3 group">
           <img src={logo} alt="DICATAT.IN" className="h-9 w-auto object-contain" />
         </Link>
 
@@ -113,19 +114,27 @@ export default function Navbar({ showAuth = true }) {
                 <div className="absolute right-0 top-[calc(100%+8px)] w-64 bg-secondary border border-border rounded-xl shadow-2xl p-2 animate-in fade-in zoom-in-95 duration-200">
                   <div className="px-3 py-2 mb-2">
                     <p className="text-sm font-bold text-foreground">
-                      {user?.user_metadata?.full_name || 'User'}
+                      {user?.user_metadata?.full_name || 'Admin'}
                     </p>
                     <p className="text-xs text-muted-foreground truncate">
                       {user?.email}
                     </p>
                   </div>
                   <div className="my-1 h-px bg-border" />
-                  <button className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-foreground hover:bg-muted transition-colors" onClick={() => { navigate('/home'); setDropdownOpen(false); }}>
-                    <BookOpen size={16} className="text-primary" /> Library
-                  </button>
-                  <button className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-foreground hover:bg-muted transition-colors" onClick={() => { setDropdownOpen(false); }}>
-                    <Settings size={16} className="text-muted-foreground" /> Settings
-                  </button>
+                  {isAdmin ? (
+                    <button className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-foreground hover:bg-muted transition-colors" onClick={() => { navigate('/cms'); setDropdownOpen(false); }}>
+                      <Settings size={16} className="text-primary" /> CMS Editor
+                    </button>
+                  ) : (
+                    <>
+                      <button className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-foreground hover:bg-muted transition-colors" onClick={() => { navigate('/home'); setDropdownOpen(false); }}>
+                        <BookOpen size={16} className="text-primary" /> Library
+                      </button>
+                      <button className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-foreground hover:bg-muted transition-colors" onClick={() => { setDropdownOpen(false); }}>
+                        <Settings size={16} className="text-muted-foreground" /> Settings
+                      </button>
+                    </>
+                  )}
                   <div className="my-1 h-px bg-border" />
                   <button className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-red-500 hover:bg-red-500/10 transition-colors" onClick={handleSignOut}>
                     <LogOut size={16} /> Sign Out

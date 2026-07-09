@@ -30,7 +30,12 @@ export default function LoginPage() {
       if (result.user) {
         setUser(result.user);
         setSession(result.session);
-        navigate('/home');
+        const isAdmin = result.user.role === 'admin' || (result.user.email && result.user.email.includes('admin'));
+        if (isAdmin) {
+          navigate('/cms');
+        } else {
+          navigate('/home');
+        }
       }
     } catch (err) {
       setError('Username/password incorrect.');

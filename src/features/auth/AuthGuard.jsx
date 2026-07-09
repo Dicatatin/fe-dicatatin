@@ -4,7 +4,7 @@ import useAuthStore from '@/stores/useAuthStore';
 import { getSession, onAuthStateChange } from '@/services/authService';
 import { PageLoader } from '@/components/ui/Loader';
 
-export default function AuthGuard({ children }) {
+export default function AuthGuard({ children, requireRole = 'user' }) {
   const { user, isLoading, setUser, setSession, setLoading } = useAuthStore();
 
   useEffect(() => {
@@ -35,6 +35,16 @@ export default function AuthGuard({ children }) {
 
   if (!user) {
     return <Navigate to="/login" replace />;
+  }
+
+  const isAdmin = user.role === 'admin' || (user.email && user.email.includes('admin'));
+
+  if (requireRole === 'admin' && !isAdmin) {
+    return <Navigate to="/home" replace />;
+  }
+
+  if (requireRole === 'user' && isAdmin) {
+    return <Navigate to="/cms" replace />;
   }
 
   return children;
