@@ -1,9 +1,37 @@
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import Button from '@/components/ui/Button';
+import { getHeroSection } from '@/services/cmsService';
 
 export default function HeroSection() {
   const navigate = useNavigate();
+  const [heroData, setHeroData] = useState({
+    titlePrefix: "Ubah Catatan Berantakan Menjadi ",
+    titleHighlight: "Pengetahuan Terstruktur",
+    titleSuffix: " dalam Hitungan Detik",
+    subtitle: "Platform AI yang memahami tulisan tanganmu. Pilih dari 7 metode belajar dan transformasi catatanmu menjadi alat belajar aktif."
+  });
+
+  useEffect(() => {
+    getHeroSection()
+      .then((data) => {
+        if (data) {
+          setHeroData(data);
+        }
+      })
+      .catch((err) => {
+        console.warn('Gagal memuat teks hero dari API, menggunakan fallback localStorage/default:', err);
+        const saved = localStorage.getItem('dicatatin-hero-text');
+        if (saved) {
+          try {
+            setHeroData(JSON.parse(saved));
+          } catch (e) {
+            console.error('Error parsing hero text from localStorage', e);
+          }
+        }
+      });
+  }, []);
 
   return (
     <section className="relative py-20 md:py-32 overflow-hidden" id="hero">
@@ -14,14 +42,15 @@ export default function HeroSection() {
         <div className="flex flex-col lg:flex-row items-center gap-16">
           <div className="flex-1 text-center lg:text-left">
             <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight leading-[1.1] mb-6">
-              Ubah Catatan Berantakan Menjadi{' '}
-              <span className="bg-gradient-to-r from-primary via-blue-400 to-teal-400 bg-clip-text text-transparent">Pengetahuan Terstruktur</span>{' '}
-              dalam Hitungan Detik
+              {heroData.titlePrefix}
+              <span className="bg-gradient-to-r from-primary via-blue-400 to-teal-400 bg-clip-text text-transparent">
+                {heroData.titleHighlight}
+              </span>
+              {heroData.titleSuffix}
             </h1>
 
             <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-              Platform AI yang memahami tulisan tanganmu.
-              Pilih dari 7 metode belajar dan transformasi catatan Anda menjadi alat belajar aktif.
+              {heroData.subtitle}
             </p>
 
             <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-5 mb-16">

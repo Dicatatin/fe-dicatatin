@@ -12,6 +12,7 @@ import LoginPage from '@/pages/LoginPage';
 import SignupPage from '@/pages/SignupPage';
 import HomePage from '@/pages/HomePage';
 import WorkspacePage from '@/pages/WorkspacePage';
+import CMSPage from '@/pages/CMSPage';
 import NotFoundPage from '@/pages/NotFoundPage';
 
 // Auth
@@ -36,10 +37,13 @@ export default function App() {
 
         {/* Protected routes */}
         <Route path="/home" element={
-          <AuthGuard><HomePage /></AuthGuard>
+          <AuthGuard requireRole="user"><HomePage /></AuthGuard>
         } />
         <Route path="/workspace/:id" element={
-          <AuthGuard><WorkspacePage /></AuthGuard>
+          <AuthGuard requireRole="user"><WorkspacePage /></AuthGuard>
+        } />
+        <Route path="/cms" element={
+          <AuthGuard requireRole="admin"><CMSPage /></AuthGuard>
         } />
 
         {/* 404 */}
